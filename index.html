@@ -257,13 +257,13 @@
         }
 
         // Stockage global des changements
-        let changes = [];
-        let userChoices = [];
-        let currentChangeIndex = 0;
+        var changes = [];
+        var userChoices = [];
+        var currentChangeIndex = 0;
 
-        document.getElementById('mergeBtn').addEventListener('click', async function() {
-            const code1 = document.getElementById('code1').value;
-            const code2 = document.getElementById('code2').value;
+        document.getElementById('mergeBtn').addEventListener('click', function() {
+            var code1 = document.getElementById('code1').value;
+            var code2 = document.getElementById('code2').value;
 
             // Vérification des entrées
             if (!code1.trim() && !code2.trim()) {
@@ -277,15 +277,15 @@
             }
 
             // Séparation des parties HTML, CSS et JS pour les deux codes
-            const parts1 = parseCode(code1);
-            const parts2 = parseCode(code2);
+            var parts1 = parseCode(code1);
+            var parts2 = parseCode(code2);
 
             console.log('Parts Code 1:', parts1);
             console.log('Parts Code 2:', parts2);
 
             // Extraction des composants
-            const components1 = extractAllComponents(parts1);
-            const components2 = extractAllComponents(parts2);
+            var components1 = extractAllComponents(parts1);
+            var components2 = extractAllComponents(parts2);
 
             console.log('Composants Code 1:', components1);
             console.log('Composants Code 2:', components2);
@@ -313,29 +313,29 @@
 
         // Fonction pour parser le code en HTML, CSS et JS
         function parseCode(code) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(code, 'text/html');
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(code, 'text/html');
 
             // Extraction du HTML (le body)
-            const html = doc.body.innerHTML.trim();
+            var html = doc.body.innerHTML.trim();
 
             // Extraction du CSS (contenu des balises <style>)
-            const styleTags = doc.querySelectorAll('style');
-            let css = '';
-            styleTags.forEach(style => {
+            var styleTags = doc.querySelectorAll('style');
+            var css = '';
+            styleTags.forEach(function(style) {
                 css += style.innerHTML + '\n';
             });
             css = css.trim();
 
             // Extraction du JavaScript (contenu des balises <script> sans src)
-            const scriptTags = doc.querySelectorAll('script:not([src])');
-            let js = '';
-            scriptTags.forEach(script => {
+            var scriptTags = doc.querySelectorAll('script:not([src])');
+            var js = '';
+            scriptTags.forEach(function(script) {
                 js += script.innerHTML + '\n';
             });
             js = js.trim();
 
-            return { html, css, js };
+            return { html: html, css: css, js: js };
         }
 
         // Fonction pour extraire tous les composants
@@ -349,16 +349,16 @@
 
         // Extraction des composants HTML
         function extractHTMLComponents(html) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const elements = [];
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+            var elements = [];
 
             // Fonction de traversal
             function traverse(node) {
-                node.childNodes.forEach(child => {
+                node.childNodes.forEach(function(child) {
                     if (child.nodeType === Node.ELEMENT_NODE) {
-                        const attrs = {};
-                        Array.from(child.attributes).forEach(attr => {
+                        var attrs = {};
+                        Array.from(child.attributes).forEach(function(attr) {
                             attrs[attr.name] = attr.value;
                         });
                         elements.push({
@@ -377,23 +377,26 @@
 
         // Extraction des classes CSS
         function extractCSSClasses(css) {
-            const classes = new Set();
+            var classes = [];
+            if (!css) return classes;
+
             // Création d'un élément style pour parser le CSS
-            const style = document.createElement('style');
+            var style = document.createElement('style');
             style.innerHTML = css;
             document.head.appendChild(style);
 
             // Parcourir les règles CSS
             try {
-                const sheet = style.sheet;
+                var sheet = style.sheet;
                 if (sheet) {
-                    for (let rule of sheet.cssRules) {
+                    for (var i = 0; i < sheet.cssRules.length; i++) {
+                        var rule = sheet.cssRules[i];
                         if (rule.type === CSSRule.STYLE_RULE) {
-                            const selectors = rule.selectorText.split(',');
-                            selectors.forEach(selector => {
-                                const classMatch = selector.trim().match(/\.(\w[\w-]*)/);
-                                if (classMatch) {
-                                    classes.add(classMatch[1]);
+                            var selectors = rule.selectorText.split(',');
+                            selectors.forEach(function(selector) {
+                                var classMatch = selector.trim().match(/\.(\w[\w-]*)/);
+                                if (classMatch && classMatch[1]) {
+                                    classes.push(classMatch[1]);
                                 }
                             });
                         }
@@ -405,25 +408,27 @@
 
             // Nettoyage
             document.head.removeChild(style);
-            return Array.from(classes);
+            return classes;
         }
 
         // Extraction des composants JavaScript
         function extractJSComponents(js) {
-            const functions = [];
-            const variables = [];
+            var functions = [];
+            var variables = [];
+
+            if (!js) return { functions: functions, variables: variables };
 
             try {
-                const ast = esprima.parseScript(js, { tolerant: true });
-                traverseAST(ast, node => {
+                var ast = esprima.parseScript(js, { tolerant: true });
+                traverseAST(ast, function(node) {
                     if (node.type === 'FunctionDeclaration') {
                         functions.push({
                             name: node.id ? node.id.name : 'anonymous',
-                            params: node.params.map(param => param.name),
+                            params: node.params.map(function(param) { return param.name; }),
                             body: escodegen.generate(node.body)
                         });
                     } else if (node.type === 'VariableDeclaration') {
-                        node.declarations.forEach(decl => {
+                        node.declarations.forEach(function(decl) {
                             variables.push({
                                 name: decl.id.name,
                                 init: decl.init ? escodegen.generate(decl.init) : null
@@ -435,17 +440,17 @@
                 console.error('Erreur lors de l\'analyse JavaScript:', e);
             }
 
-            return { functions, variables };
+            return { functions: functions, variables: variables };
         }
 
         // Traverser l'AST
         function traverseAST(node, callback) {
             callback(node);
-            for (let key in node) {
+            for (var key in node) {
                 if (node.hasOwnProperty(key)) {
-                    const child = node[key];
+                    var child = node[key];
                     if (Array.isArray(child)) {
-                        child.forEach(c => {
+                        child.forEach(function(c) {
                             if (c && typeof c.type === 'string') {
                                 traverseAST(c, callback);
                             }
@@ -459,39 +464,39 @@
 
         // Comparaison des composants
         function compareAllComponents(components1, components2) {
-            const allChanges = [];
+            var allChanges = [];
 
             // Comparaison HTML
-            const htmlChanges = compareHTMLComponents(components1.html, components2.html);
-            allChanges.push(...htmlChanges);
+            var htmlChanges = compareHTMLComponents(components1.html, components2.html);
+            allChanges = allChanges.concat(htmlChanges);
 
             // Comparaison CSS
-            const cssChanges = compareCSSClasses(components1.css, components2.css);
-            allChanges.push(...cssChanges);
+            var cssChanges = compareCSSClasses(components1.css, components2.css);
+            allChanges = allChanges.concat(cssChanges);
 
             // Comparaison JS
-            const jsChanges = compareJSComponents(components1.js, components2.js);
-            allChanges.push(...jsChanges);
+            var jsChanges = compareJSComponents(components1.js, components2.js);
+            allChanges = allChanges.concat(jsChanges);
 
             return allChanges;
         }
 
         // Comparaison des composants HTML
         function compareHTMLComponents(html1, html2) {
-            const changes = [];
+            var changes = [];
 
-            const map1 = new Map();
-            html1.forEach(comp => {
+            var map1 = new Map();
+            html1.forEach(function(comp) {
                 map1.set(comp.outerHTML, comp);
             });
 
-            const map2 = new Map();
-            html2.forEach(comp => {
+            var map2 = new Map();
+            html2.forEach(function(comp) {
                 map2.set(comp.outerHTML, comp);
             });
 
             // Ajouts
-            html2.forEach(comp => {
+            html2.forEach(function(comp) {
                 if (!map1.has(comp.outerHTML)) {
                     changes.push({
                         type: 'ajout_html',
@@ -501,7 +506,7 @@
             });
 
             // Suppressions
-            html1.forEach(comp => {
+            html1.forEach(function(comp) {
                 if (!map2.has(comp.outerHTML)) {
                     changes.push({
                         type: 'suppression_html',
@@ -512,10 +517,12 @@
 
             // Modifications basiques (ici, on considère une modification si une balise similaire existe mais avec des attributs différents)
             // Cette logique peut être améliorée pour des comparaisons plus sophistiquées
-            html1.forEach(comp1 => {
-                html2.forEach(comp2 => {
-                    if (comp1.tag === comp2.tag && comp1.name === comp2.name) {
-                        if (JSON.stringify(comp1.attributes) !== JSON.stringify(comp2.attributes)) {
+            html1.forEach(function(comp1) {
+                html2.forEach(function(comp2) {
+                    if (comp1.tag === comp2.tag) {
+                        var attrs1 = JSON.stringify(comp1.attributes);
+                        var attrs2 = JSON.stringify(comp2.attributes);
+                        if (attrs1 !== attrs2) {
                             changes.push({
                                 type: 'modification_html',
                                 before: comp1,
@@ -531,13 +538,13 @@
 
         // Comparaison des classes CSS
         function compareCSSClasses(css1, css2) {
-            const changes = [];
+            var changes = [];
 
-            const set1 = new Set(css1);
-            const set2 = new Set(css2);
+            var set1 = new Set(css1);
+            var set2 = new Set(css2);
 
             // Ajouts
-            css2.forEach(cls => {
+            css2.forEach(function(cls) {
                 if (!set1.has(cls)) {
                     changes.push({
                         type: 'ajout_css',
@@ -547,7 +554,7 @@
             });
 
             // Suppressions
-            css1.forEach(cls => {
+            css1.forEach(function(cls) {
                 if (!set2.has(cls)) {
                     changes.push({
                         type: 'suppression_css',
@@ -561,21 +568,21 @@
 
         // Comparaison des composants JavaScript
         function compareJSComponents(js1, js2) {
-            const changes = [];
+            var changes = [];
 
             // Comparaison des fonctions
-            const funcMap1 = new Map();
-            js1.functions.forEach(func => {
+            var funcMap1 = new Map();
+            js1.functions.forEach(function(func) {
                 funcMap1.set(func.name, func);
             });
 
-            const funcMap2 = new Map();
-            js2.functions.forEach(func => {
+            var funcMap2 = new Map();
+            js2.functions.forEach(function(func) {
                 funcMap2.set(func.name, func);
             });
 
             // Ajouts de fonctions
-            js2.functions.forEach(func => {
+            js2.functions.forEach(function(func) {
                 if (!funcMap1.has(func.name)) {
                     changes.push({
                         type: 'ajout_js_function',
@@ -585,7 +592,7 @@
             });
 
             // Suppressions de fonctions
-            js1.functions.forEach(func => {
+            js1.functions.forEach(function(func) {
                 if (!funcMap2.has(func.name)) {
                     changes.push({
                         type: 'suppression_js_function',
@@ -595,9 +602,9 @@
             });
 
             // Modifications de fonctions
-            js1.functions.forEach(func1 => {
+            js1.functions.forEach(function(func1) {
                 if (funcMap2.has(func1.name)) {
-                    const func2 = funcMap2.get(func1.name);
+                    var func2 = funcMap2.get(func1.name);
                     if (func1.body !== func2.body) {
                         changes.push({
                             type: 'modification_js_function',
@@ -609,18 +616,18 @@
             });
 
             // Comparaison des variables
-            const varMap1 = new Map();
-            js1.variables.forEach(variable => {
+            var varMap1 = new Map();
+            js1.variables.forEach(function(variable) {
                 varMap1.set(variable.name, variable);
             });
 
-            const varMap2 = new Map();
-            js2.variables.forEach(variable => {
+            var varMap2 = new Map();
+            js2.variables.forEach(function(variable) {
                 varMap2.set(variable.name, variable);
             });
 
             // Ajouts de variables
-            js2.variables.forEach(variable => {
+            js2.variables.forEach(function(variable) {
                 if (!varMap1.has(variable.name)) {
                     changes.push({
                         type: 'ajout_js_variable',
@@ -630,7 +637,7 @@
             });
 
             // Suppressions de variables
-            js1.variables.forEach(variable => {
+            js1.variables.forEach(function(variable) {
                 if (!varMap2.has(variable.name)) {
                     changes.push({
                         type: 'suppression_js_variable',
@@ -640,9 +647,9 @@
             });
 
             // Modifications de variables
-            js1.variables.forEach(variable1 => {
+            js1.variables.forEach(function(variable1) {
                 if (varMap2.has(variable1.name)) {
-                    const variable2 = varMap2.get(variable1.name);
+                    var variable2 = varMap2.get(variable1.name);
                     if (variable1.init !== variable2.init) {
                         changes.push({
                             type: 'modification_js_variable',
@@ -657,40 +664,39 @@
         }
 
         // Fonction pour afficher un changement spécifique
-        async function showChange(index) {
+        function showChange(index) {
             if (index < 0 || index >= changes.length) return;
 
-            const change = changes[index];
-            const changeNumber = index + 1;
+            var change = changes[index];
+            var changeNumber = index + 1;
             currentChangeIndex = index;
 
             // Générer la description du changement
-            const description = generateChangeDescription(change, changeNumber);
+            var description = generateChangeDescription(change, changeNumber);
 
             // Afficher le popup avec les options et les boutons de navigation
-            await Swal.fire({
-                html: description + `
-                    <div class="button-group" style="margin-top:20px;">
-                        <button id="acceptBtn" class="swal2-styled accept-btn">Oui</button>
-                        <button id="rejectBtn" class="swal2-styled reject-btn">Non</button>
-                        <button id="customBtn" class="swal2-styled custom-btn">Code Personnalisé</button>
-                    </div>
-                    <div class="navigation-group" style="margin-top:20px;">
-                        <button id="prevBtn" class="swal2-styled">Précédent</button>
-                        <button id="nextBtn" class="swal2-styled">Suivant</button>
-                    </div>
-                `,
+            Swal.fire({
+                html: description +
+                      '<div class="button-group" style="margin-top:20px;">' +
+                          '<button id="acceptBtn" class="swal2-styled accept-btn">Oui</button>' +
+                          '<button id="rejectBtn" class="swal2-styled reject-btn">Non</button>' +
+                          '<button id="customBtn" class="swal2-styled custom-btn">Code Personnalisé</button>' +
+                      '</div>' +
+                      '<div class="navigation-group" style="margin-top:20px;">' +
+                          '<button id="prevBtn" class="swal2-styled">Précédent</button>' +
+                          '<button id="nextBtn" class="swal2-styled">Suivant</button>' +
+                      '</div>',
                 width: '90%', // Largeur du popup
                 heightAuto: false, // Désactiver l'ajustement automatique de la hauteur
                 showConfirmButton: false,
                 showCancelButton: false,
                 allowOutsideClick: false,
-                didOpen: () => {
-                    const acceptBtn = Swal.getPopup().querySelector('#acceptBtn');
-                    const rejectBtn = Swal.getPopup().querySelector('#rejectBtn');
-                    const customBtn = Swal.getPopup().querySelector('#customBtn');
-                    const prevBtn = Swal.getPopup().querySelector('#prevBtn');
-                    const nextBtn = Swal.getPopup().querySelector('#nextBtn');
+                didOpen: function() {
+                    var acceptBtn = Swal.getPopup().querySelector('#acceptBtn');
+                    var rejectBtn = Swal.getPopup().querySelector('#rejectBtn');
+                    var customBtn = Swal.getPopup().querySelector('#customBtn');
+                    var prevBtn = Swal.getPopup().querySelector('#prevBtn');
+                    var nextBtn = Swal.getPopup().querySelector('#nextBtn');
 
                     // Gestion des boutons de navigation
                     if (currentChangeIndex === 0) {
@@ -704,7 +710,7 @@
                         nextBtn.style.cursor = 'not-allowed';
                     }
 
-                    acceptBtn.addEventListener('click', () => {
+                    acceptBtn.addEventListener('click', function() {
                         userChoices[currentChangeIndex] = { action: 'accept', value: getAcceptedValue(change) };
                         Swal.close();
                         // Passer au changement suivant ou finaliser
@@ -715,7 +721,7 @@
                         }
                     });
 
-                    rejectBtn.addEventListener('click', () => {
+                    rejectBtn.addEventListener('click', function() {
                         userChoices[currentChangeIndex] = { action: 'reject', value: getRejectedValue(change) };
                         Swal.close();
                         // Passer au changement suivant ou finaliser
@@ -726,10 +732,10 @@
                         }
                     });
 
-                    customBtn.addEventListener('click', () => {
+                    customBtn.addEventListener('click', function() {
                         // Afficher Ace Editor pour entrer du code personnalisé
                         Swal.fire({
-                            title: `Code Personnalisé - Changement ${changeNumber}`,
+                            title: 'Code Personnalisé - Changement ' + changeNumber,
                             html: '<div id="aceEditor" style="width: 100%; height: 300px;"></div>',
                             showCancelButton: true,
                             confirmButtonText: 'Valider',
@@ -737,29 +743,29 @@
                             width: '90%',
                             heightAuto: false,
                             allowOutsideClick: false,
-                            didOpen: () => {
-                                const editor = ace.edit("aceEditor");
+                            didOpen: function() {
+                                var editor = ace.edit("aceEditor");
                                 editor.setTheme("ace/theme/github");
                                 // Déterminer le mode en fonction du type de changement
-                                let mode = "ace/mode/javascript";
-                                if (change.type.startsWith('ajout_html') || change.type.startsWith('suppression_html') || change.type.startsWith('modification_html')) {
+                                var mode = "ace/mode/javascript";
+                                if (change.type.indexOf('html') !== -1) {
                                     mode = "ace/mode/html";
-                                } else if (change.type.startsWith('ajout_css') || change.type.startsWith('suppression_css')) {
+                                } else if (change.type.indexOf('css') !== -1) {
                                     mode = "ace/mode/css";
                                 }
                                 editor.session.setMode(mode);
-                                let initialCode = generateInitialCustomCode(change, changeNumber);
+                                var initialCode = generateInitialCustomCode(change, changeNumber);
                                 editor.setValue(initialCode, -1); // -1 pour ne pas déplacer le curseur
                                 editor.focus();
                             },
-                            preConfirm: () => {
-                                const resolution = ace.edit("aceEditor").getValue();
+                            preConfirm: function() {
+                                var resolution = ace.edit("aceEditor").getValue();
                                 if (!resolution.trim()) {
                                     Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
                                 }
                                 return resolution;
                             }
-                        }).then((result) => {
+                        }).then(function(result) {
                             if (result.isConfirmed) {
                                 userChoices[currentChangeIndex] = { action: 'custom', value: result.value };
                                 Swal.close();
@@ -776,566 +782,457 @@
                         });
                     });
 
-                    prevBtn.addEventListener('click', () => {
+                    prevBtn.addEventListener('click', function() {
                         Swal.close();
                         showChange(currentChangeIndex -1);
                     });
 
-                    nextBtn.addEventListener('click', () => {
+                    nextBtn.addEventListener('click', function() {
                         Swal.close();
                         showChange(currentChangeIndex +1);
                     });
                 }
+            });
+        }
+
+        // Fonction pour finaliser la fusion après tous les changements
+        function finalizeMerge() {
+            var mergedHTML = '';
+            var mergedCSS = '';
+            var mergedJS = '';
+
+            for (var i = 0; i < changes.length; i++) {
+                var change = changes[i];
+                var choice = userChoices[i];
+                if (!choice) continue;
+
+                switch (change.type) {
+                    case 'ajout_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value;
+                        }
+                        break;
+                    case 'suppression_html':
+                        if (choice.action === 'reject') {
+                            mergedHTML += change.component.outerHTML + '\n';
+                        }
+                        break;
+                    case 'modification_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value + '\n';
+                        } else if (choice.action === 'reject') {
+                            mergedHTML += change.before.outerHTML + '\n';
+                        }
+                        break;
+                    case 'ajout_css':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedCSS += '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
+                        }
+                        break;
+                    case 'suppression_css':
+                        if (choice.action === 'reject') {
+                            mergedCSS += '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
+                        }
+                        break;
+                    case 'ajout_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'suppression_js_function':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'modification_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'ajout_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        }
+                        break;
+                    case 'suppression_js_variable':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                        }
+                        break;
+                    case 'modification_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
 
-            // Fonction pour finaliser la fusion après tous les changements
-            function finalizeMerge() {
-                let mergedHTML = '';
-                let mergedCSS = '';
-                let mergedJS = '';
+            // Reconstruction du code fusionné
+            var finalHTML = mergedHTML.trim();
+            var finalCSS = mergedCSS.trim();
+            var finalJS = mergedJS.trim();
 
-                for (let i = 0; i < changes.length; i++) {
-                    const change = changes[i];
-                    const choice = userChoices[i];
-                    if (!choice) continue;
+            // Combiner les parties pour former un document HTML complet
+            var mergedCode = '<!DOCTYPE html>\n' +
+                             '<html lang="fr">\n' +
+                             '<head>\n' +
+                             '    <meta charset="UTF-8">\n' +
+                             '    <title>Fusco - Code Fusionné</title>\n' +
+                             (finalCSS ? '<style>\n' + finalCSS + '\n</style>\n' : '') +
+                             '</head>\n' +
+                             '<body>\n' +
+                             finalHTML + '\n' +
+                             (finalJS ? '<script>\n' + finalJS + '\n</script>\n' : '') +
+                             '</body>\n' +
+                             '</html>';
 
-                    switch (change.type) {
-                        case 'ajout_html':
-                        case 'ajout_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value;
-                            }
-                            break;
-                        case 'suppression_html':
-                            if (choice.action === 'reject') {
-                                mergedHTML += choice.value.outerHTML + '\n';
-                            }
-                            break;
-                        case 'modification_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value + '\n';
-                            } else if (choice.action === 'reject') {
-                                mergedHTML += choice.before.outerHTML + '\n';
-                            }
-                            break;
-                        case 'ajout_css':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedCSS += `.${choice.className} { /* Ajoutez vos styles ici */ }\n`;
-                            }
-                            break;
-                        case 'suppression_css':
-                            if (choice.action === 'reject') {
-                                mergedCSS += `.${choice.className} { /* Styles supprimés conservés */ }\n`;
-                            }
-                            break;
-                        case 'ajout_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'suppression_js_function':
-                            if (choice.action === 'reject') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'modification_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `function ${choice.before.name}(${choice.before.params.join(', ')}) {\n${choice.before.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'ajout_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            }
-                            break;
-                        case 'suppression_js_variable':
-                            if (choice.action === 'reject') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            }
-                            break;
-                        case 'modification_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `var ${choice.before.name} = ${choice.before.init};\n`;
-                            }
-                            break;
-                        default:
-                            break;
+            // Afficher le code fusionné résolu
+            document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
+            Swal.fire({
+                icon: 'success',
+                title: 'Fusion réussie!',
+                text: 'Les codes ont été fusionnés avec succès.',
+                confirmButtonColor: '#4A90E2'
+            });
+        }
+
+        // Fonction pour formater le code fusionné (ajouter des indentations)
+        function mergedCodeFormat(code) {
+            // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
+            return code;
+        }
+
+        // Fonctions pour obtenir les valeurs acceptées ou rejetées
+        function getAcceptedValue(change) {
+            switch (change.type) {
+                case 'ajout_html':
+                    return change.component.outerHTML + '\n';
+                case 'suppression_html':
+                    // Accepter une suppression signifie ne rien ajouter
+                    return '';
+                case 'modification_html':
+                    return change.after.outerHTML + '\n';
+                case 'ajout_css':
+                    return '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
+                case 'suppression_css':
+                    // Accepter une suppression signifie ne rien ajouter
+                    return '';
+                case 'ajout_js_function':
+                    return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                case 'suppression_js_function':
+                    // Accepter une suppression signifie ne rien ajouter
+                    return '';
+                case 'modification_js_function':
+                    return 'function ' + change.after.name + '(' + change.after.params.join(', ') + ') {\n' + change.after.body + '\n}\n\n';
+                case 'ajout_js_variable':
+                    return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                case 'suppression_js_variable':
+                    // Accepter une suppression signifie ne rien ajouter
+                    return '';
+                case 'modification_js_variable':
+                    return 'var ' + change.after.name + ' = ' + change.after.init + ';\n';
+                default:
+                    return '';
+            }
+        }
+
+        function getRejectedValue(change) {
+            switch (change.type) {
+                case 'ajout_html':
+                    // Rejeter un ajout signifie ne rien ajouter
+                    return '';
+                case 'suppression_html':
+                    // Rejeter une suppression signifie garder le code supprimé
+                    return change.component.outerHTML + '\n';
+                case 'modification_html':
+                    return change.before.outerHTML + '\n';
+                case 'ajout_css':
+                    // Rejeter un ajout signifie ne rien ajouter
+                    return '';
+                case 'suppression_css':
+                    // Rejeter une suppression signifie garder le code supprimé
+                    return '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
+                case 'ajout_js_function':
+                    // Rejeter un ajout signifie ne rien ajouter
+                    return '';
+                case 'suppression_js_function':
+                    // Rejeter une suppression signifie garder la fonction supprimée
+                    return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                case 'modification_js_function':
+                    return 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
+                case 'ajout_js_variable':
+                    // Rejeter un ajout signifie ne rien ajouter
+                    return '';
+                case 'suppression_js_variable':
+                    // Rejeter une suppression signifie garder la variable supprimée
+                    return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                case 'modification_js_variable':
+                    return 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
+                default:
+                    return '';
+            }
+        }
+
+        // Fonction pour générer la description du changement
+        function generateChangeDescription(change, changeNumber) {
+            var description = '<div class="change-number">Changement ' + changeNumber + '</div>';
+            switch (change.type) {
+                case 'ajout_html':
+                    description += '<p><strong>Ajout d\'un élément HTML :</strong></p><pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>';
+                    description += '<p>Un nouvel élément HTML a été ajouté. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'suppression_html':
+                    description += '<p><strong>Suppression d\'un élément HTML :</strong></p><pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>';
+                    description += '<p>Un élément HTML a été supprimé. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'modification_html':
+                    description += '<p><strong>Modification d\'un élément HTML :</strong></p>';
+                    description += '<p><strong>Avant :</strong></p><pre><code>' + escapeHtml(change.before.outerHTML) + '</code></pre>';
+                    description += '<p><strong>Après :</strong></p><pre><code>' + escapeHtml(change.after.outerHTML) + '</code></pre>';
+                    description += '<p>Un élément HTML a été modifié. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'ajout_css':
+                    description += '<p><strong>Ajout d\'une classe CSS :</strong></p><pre><code>.' + escapeHtml(change.className) + ' { /* Ajoutez vos styles ici */ }</code></pre>';
+                    description += '<p>Une nouvelle classe CSS a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'suppression_css':
+                    description += '<p><strong>Suppression d\'une classe CSS :</strong></p><pre><code>.' + escapeHtml(change.className) + ' { /* Styles supprimés conservés */ }</code></pre>';
+                    description += '<p>Une classe CSS a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'ajout_js_function':
+                    description += '<p><strong>Ajout d\'une fonction JavaScript :</strong></p><pre><code>' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>';
+                    description += '<p>Une nouvelle fonction JavaScript a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'suppression_js_function':
+                    description += '<p><strong>Suppression d\'une fonction JavaScript :</strong></p><pre><code>' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>';
+                    description += '<p>Une fonction JavaScript a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'modification_js_function':
+                    description += '<p><strong>Modification d\'une fonction JavaScript :</strong></p>';
+                    description += '<p><strong>Avant :</strong></p><pre><code>' + escapeHtml(change.before.name) + '(' + change.before.params.join(', ') + ') {\n' + escapeHtml(change.before.body) + '\n}</code></pre>';
+                    description += '<p><strong>Après :</strong></p><pre><code>' + escapeHtml(change.after.name) + '(' + change.after.params.join(', ') + ') {\n' + escapeHtml(change.after.body) + '\n}</code></pre>';
+                    description += '<p>Une fonction JavaScript a été modifiée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'ajout_js_variable':
+                    description += '<p><strong>Ajout d\'une variable JavaScript :</strong></p><pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>';
+                    description += '<p>Une nouvelle variable JavaScript a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'suppression_js_variable':
+                    description += '<p><strong>Suppression d\'une variable JavaScript :</strong></p><pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>';
+                    description += '<p>Une variable JavaScript a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                case 'modification_js_variable':
+                    description += '<p><strong>Modification d\'une variable JavaScript :</strong></p>';
+                    description += '<p><strong>Avant :</strong></p><pre><code>var ' + escapeHtml(change.before.name) + ' = ' + escapeHtml(change.before.init) + ';</code></pre>';
+                    description += '<p><strong>Après :</strong></p><pre><code>var ' + escapeHtml(change.after.name) + ' = ' + escapeHtml(change.after.init) + ';</code></pre>';
+                    description += '<p>Une variable JavaScript a été modifiée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    break;
+                default:
+                    break;
+            }
+            return description;
+        }
+
+        // Fonction pour finaliser la fusion après tous les changements
+        function finalizeMerge() {
+            var mergedHTML = '';
+            var mergedCSS = '';
+            var mergedJS = '';
+
+            for (var i = 0; i < changes.length; i++) {
+                var change = changes[i];
+                var choice = userChoices[i];
+                if (!choice) continue;
+
+                switch (change.type) {
+                    case 'ajout_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value;
+                        }
+                        break;
+                    case 'suppression_html':
+                        if (choice.action === 'reject') {
+                            mergedHTML += change.component.outerHTML + '\n';
+                        }
+                        break;
+                    case 'modification_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value + '\n';
+                        } else if (choice.action === 'reject') {
+                            mergedHTML += change.before.outerHTML + '\n';
+                        }
+                        break;
+                    case 'ajout_css':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedCSS += '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
+                        }
+                        break;
+                    case 'suppression_css':
+                        if (choice.action === 'reject') {
+                            mergedCSS += '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
+                        }
+                        break;
+                    case 'ajout_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'suppression_js_function':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'modification_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'ajout_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        }
+                        break;
+                    case 'suppression_js_variable':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                        }
+                        break;
+                    case 'modification_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            // Reconstruction du code fusionné
+            var finalHTML = mergedHTML.trim();
+            var finalCSS = mergedCSS.trim();
+            var finalJS = mergedJS.trim();
+
+            // Combiner les parties pour former un document HTML complet
+            var mergedCode = '<!DOCTYPE html>\n' +
+                             '<html lang="fr">\n' +
+                             '<head>\n' +
+                             '    <meta charset="UTF-8">\n' +
+                             '    <title>Fusco - Code Fusionné</title>\n' +
+                             (finalCSS ? '<style>\n' + finalCSS + '\n</style>\n' : '') +
+                             '</head>\n' +
+                             '<body>\n' +
+                             finalHTML + '\n' +
+                             (finalJS ? '<script>\n' + finalJS + '\n</script>\n' : '') +
+                             '</body>\n' +
+                             '</html>';
+
+            // Afficher le code fusionné résolu
+            document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
+            Swal.fire({
+                icon: 'success',
+                title: 'Fusion réussie!',
+                text: 'Les codes ont été fusionnés avec succès.',
+                confirmButtonColor: '#4A90E2'
+            });
+        }
+
+        // Fonction pour formater le code fusionné (ajouter des indentations)
+        function mergedCodeFormat(code) {
+            // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
+            return code;
+        }
+
+        // Fonction pour échapper les caractères HTML
+        function escapeHtml(text) {
+            var map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Fonction pour générer le contenu initial de la résolution personnalisée dans Ace Editor
+        function generateInitialCustomCode(change, changeNumber) {
+            var initialCode = '';
+            if (change.type.indexOf('html') !== -1) {
+                if (change.type === 'modification_html') {
+                    initialCode = '// Résolution de la modification ' + changeNumber + '\n' +
+                                 '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
+                                 '// Avant :\n' + change.before.outerHTML + '\n\n' +
+                                 '// Après :\n' + change.after.outerHTML;
+                } else if (change.type === 'suppression_html') {
+                    initialCode = '// Résolution de la suppression ' + changeNumber + '\n' +
+                                 '// Si vous souhaitez réintégrer l\'élément HTML supprimé, modifiez le ci-dessous.\n\n' +
+                                 '// Élément supprimé :\n' + change.component.outerHTML;
+                } else if (change.type === 'ajout_html') {
+                    initialCode = '// Résolution de l\'ajout ' + changeNumber + '\n' +
+                                 '// Si vous souhaitez modifier l\'ajout, éditez l\'élément HTML ci-dessous.\n\n' +
+                                 '// Élément ajouté :\n' + change.component.outerHTML;
+                }
+            } else if (change.type.indexOf('css') !== -1) {
+                if (change.type === 'modification_css') {
+                    initialCode = '// Résolution de la modification CSS ' + changeNumber + '\n' +
+                                 '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
+                                 '// Avant :\n' + '.' + change.before.className + ' { /* Styles avant */ }\n\n' +
+                                 '// Après :\n' + '.' + change.after.className + ' { /* Styles après */ }';
+                } else if (change.type === 'suppression_css') {
+                    initialCode = '// Résolution de la suppression CSS ' + changeNumber + '\n' +
+                                 '// Si vous souhaitez réintégrer la classe CSS supprimée, modifiez le ci-dessous.\n\n' +
+                                 '// Classe supprimée :\n.' + change.className + ' { /* Styles supprimés */ }';
+                } else if (change.type === 'ajout_css') {
+                    initialCode = '// Résolution de l\'ajout CSS ' + changeNumber + '\n' +
+                                 '// Si vous souhaitez modifier l\'ajout, éditez la classe CSS ci-dessous.\n\n' +
+                                 '// Classe ajoutée :\n.' + change.className + ' { /* Ajoutez vos styles ici */ }';
+                }
+            } else if (change.type.indexOf('js') !== -1) {
+                if (change.type.indexOf('function') !== -1) {
+                    if (change.type === 'modification_js_function') {
+                        initialCode = '// Résolution de la modification de la fonction ' + changeNumber + '\n' +
+                                     '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
+                                     '// Avant :\n' + 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n' +
+                                     '// Après :\n' + 'function ' + change.after.name + '(' + change.after.params.join(', ') + ') {\n' + change.after.body + '\n}';
+                    } else if (change.type === 'suppression_js_function') {
+                        initialCode = '// Résolution de la suppression de la fonction ' + changeNumber + '\n' +
+                                     '// Si vous souhaitez réintégrer la fonction JavaScript supprimée, modifiez le ci-dessous.\n\n' +
+                                     '// Fonction supprimée :\n' + 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}';
+                    } else if (change.type === 'ajout_js_function') {
+                        initialCode = '// Résolution de l\'ajout de la fonction ' + changeNumber + '\n' +
+                                     '// Si vous souhaitez modifier l\'ajout, éditez la fonction JavaScript ci-dessous.\n\n' +
+                                     '// Fonction ajoutée :\n' + 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}';
+                    }
+                } else if (change.type.indexOf('variable') !== -1) {
+                    if (change.type === 'modification_js_variable') {
+                        initialCode = '// Résolution de la modification de la variable ' + changeNumber + '\n' +
+                                     '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
+                                     '// Avant :\n' + 'var ' + change.before.name + ' = ' + change.before.init + ';\n\n' +
+                                     '// Après :\n' + 'var ' + change.after.name + ' = ' + change.after.init + ';';
+                    } else if (change.type === 'suppression_js_variable') {
+                        initialCode = '// Résolution de la suppression de la variable ' + changeNumber + '\n' +
+                                     '// Si vous souhaitez réintégrer la variable JavaScript supprimée, modifiez le ci-dessous.\n\n' +
+                                     '// Variable supprimée :\n' + 'var ' + change.variable.name + ' = ' + change.variable.init + ';';
+                    } else if (change.type === 'ajout_js_variable') {
+                        initialCode = '// Résolution de l\'ajout de la variable ' + changeNumber + '\n' +
+                                     '// Si vous souhaitez modifier l\'ajout, éditez la variable JavaScript ci-dessous.\n\n' +
+                                     '// Variable ajoutée :\n' + 'var ' + change.variable.name + ' = ' + change.variable.init + ';';
                     }
                 }
+            }
 
-                // Reconstruction du code fusionné
-                let finalHTML = mergedHTML.trim();
-                let finalCSS = mergedCSS.trim();
-                let finalJS = mergedJS.trim();
-
-                // Combiner les parties pour former un document HTML complet
-                const mergedCode = `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Fusco - Code Fusionné</title>
-    ${finalCSS ? `<style>\n${finalCSS}\n</style>` : ''}
-</head>
-<body>
-    ${finalHTML}
-    ${finalJS ? `<script>\n${finalJS}\n</script>` : ''}
+            return initialCode;
+        }
+    </script>
 </body>
-</html>
-                `.trim();
-
-                // Afficher le code fusionné résolu
-                document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Fusion réussie!',
-                    text: 'Les codes ont été fusionnés avec succès.',
-                    confirmButtonColor: '#4A90E2'
-                });
-            }
-
-            // Fonction pour formater le code fusionné (ajouter des indentations)
-            function mergedCodeFormat(code) {
-                // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
-                return code;
-            }
-
-            // Fonctions pour obtenir les valeurs acceptées ou rejetées
-            function getAcceptedValue(change) {
-                switch (change.type) {
-                    case 'ajout_html':
-                        return change.component.outerHTML + '\n';
-                    case 'suppression_html':
-                        // Accepter une suppression signifie ne rien ajouter
-                        return '';
-                    case 'modification_html':
-                        return change.after.outerHTML + '\n';
-                    case 'ajout_css':
-                        return `.${change.className} { /* Ajoutez vos styles ici */ }\n`;
-                    case 'suppression_css':
-                        // Accepter une suppression signifie ne rien ajouter
-                        return '';
-                    case 'ajout_js_function':
-                        return `function ${change.function.name}(${change.function.params.join(', ')}) {\n${change.function.body}\n}\n\n`;
-                    case 'suppression_js_function':
-                        // Accepter une suppression signifie ne rien ajouter
-                        return '';
-                    case 'modification_js_function':
-                        return `function ${change.after.name}(${change.after.params.join(', ')}) {\n${change.after.body}\n}\n\n`;
-                    case 'ajout_js_variable':
-                        return `var ${change.variable.name} = ${change.variable.init};\n`;
-                    case 'suppression_js_variable':
-                        // Accepter une suppression signifie ne rien ajouter
-                        return '';
-                    case 'modification_js_variable':
-                        return `var ${change.after.name} = ${change.after.init};\n`;
-                    default:
-                        return '';
-                }
-            }
-
-            function getRejectedValue(change) {
-                switch (change.type) {
-                    case 'ajout_html':
-                        // Rejeter un ajout signifie ne rien ajouter
-                        return '';
-                    case 'suppression_html':
-                        // Rejeter une suppression signifie garder le code supprimé
-                        return change.component.outerHTML + '\n';
-                    case 'modification_html':
-                        return change.before.outerHTML + '\n';
-                    case 'ajout_css':
-                        // Rejeter un ajout signifie ne rien ajouter
-                        return '';
-                    case 'suppression_css':
-                        // Rejeter une suppression signifie garder le code supprimé
-                        return `.${change.className} { /* Styles supprimés conservés */ }\n`;
-                    case 'ajout_js_function':
-                        // Rejeter un ajout signifie ne rien ajouter
-                        return '';
-                    case 'suppression_js_function':
-                        // Rejeter une suppression signifie garder la fonction supprimée
-                        return `function ${change.function.name}(${change.function.params.join(', ')}) {\n${change.function.body}\n}\n\n`;
-                    case 'modification_js_function':
-                        return `function ${change.before.name}(${change.before.params.join(', ')}) {\n${change.before.body}\n}\n\n`;
-                    case 'ajout_js_variable':
-                        // Rejeter un ajout signifie ne rien ajouter
-                        return '';
-                    case 'suppression_js_variable':
-                        // Rejeter une suppression signifie garder la variable supprimée
-                        return `var ${change.variable.name} = ${change.variable.init};\n`;
-                    case 'modification_js_variable':
-                        return `var ${change.before.name} = ${change.before.init};\n`;
-                    default:
-                        return '';
-                }
-            }
-
-            // Fonction pour générer la description du changement
-            function generateChangeDescription(change, changeNumber) {
-                let description = `<div class="change-number">Changement ${changeNumber}</div>`;
-                switch (change.type) {
-                    case 'ajout_html':
-                        description += `<p><strong>Ajout d'un élément HTML :</strong></p><pre><code>${escapeHtml(change.component.outerHTML)}</code></pre>`;
-                        description += `<p>Un nouvel élément HTML a été ajouté. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_html':
-                        description += `<p><strong>Suppression d'un élément HTML :</strong></p><pre><code>${escapeHtml(change.component.outerHTML)}</code></pre>`;
-                        description += `<p>Un élément HTML a été supprimé. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_html':
-                        description += `<p><strong>Modification d'un élément HTML :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>${escapeHtml(change.before.outerHTML)}</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>${escapeHtml(change.after.outerHTML)}</code></pre>`;
-                        description += `<p>Un élément HTML a été modifié. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_css':
-                        description += `<p><strong>Ajout d'une classe CSS :</strong></p><pre><code>.${escapeHtml(change.className)} { /* Ajoutez vos styles ici */ }</code></pre>`;
-                        description += `<p>Une nouvelle classe CSS a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_css':
-                        description += `<p><strong>Suppression d'une classe CSS :</strong></p><pre><code>.${escapeHtml(change.className)} { /* Styles supprimés conservés */ }</code></pre>`;
-                        description += `<p>Une classe CSS a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_js_function':
-                        description += `<p><strong>Ajout d'une fonction JavaScript :</strong></p><pre><code>${escapeHtml(change.function.name)}(${change.function.params.join(', ')}) {\n${change.function.body}\n}</code></pre>`;
-                        description += `<p>Une nouvelle fonction JavaScript a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_js_function':
-                        description += `<p><strong>Suppression d'une fonction JavaScript :</strong></p><pre><code>${escapeHtml(change.function.name)}(${change.function.params.join(', ')}) {\n${change.function.body}\n}</code></pre>`;
-                        description += `<p>Une fonction JavaScript a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_js_function':
-                        description += `<p><strong>Modification d'une fonction JavaScript :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>${escapeHtml(change.before.name)}(${change.before.params.join(', ')}) {\n${change.before.body}\n}</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>${escapeHtml(change.after.name)}(${change.after.params.join(', ')}) {\n${change.after.body}\n}</code></pre>`;
-                        description += `<p>Une fonction JavaScript a été modifiée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_js_variable':
-                        description += `<p><strong>Ajout d'une variable JavaScript :</strong></p><pre><code>var ${escapeHtml(change.variable.name)} = ${escapeHtml(change.variable.init)};</code></pre>`;
-                        description += `<p>Une nouvelle variable JavaScript a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_js_variable':
-                        description += `<p><strong>Suppression d'une variable JavaScript :</strong></p><pre><code>var ${escapeHtml(change.variable.name)} = ${escapeHtml(change.variable.init)};</code></pre>`;
-                        description += `<p>Une variable JavaScript a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_js_variable':
-                        description += `<p><strong>Modification d'une variable JavaScript :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>var ${escapeHtml(change.before.name)} = ${escapeHtml(change.before.init)};</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>var ${escapeHtml(change.after.name)} = ${escapeHtml(change.after.init)};</code></pre>`;
-                        description += `<p>Une variable JavaScript a été modifiée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    default:
-                        break;
-                }
-                return description;
-            }
-
-            // Fonction pour finaliser la fusion après tous les changements
-            function finalizeMerge() {
-                let mergedHTML = '';
-                let mergedCSS = '';
-                let mergedJS = '';
-
-                for (let i = 0; i < changes.length; i++) {
-                    const change = changes[i];
-                    const choice = userChoices[i];
-                    if (!choice) continue;
-
-                    switch (change.type) {
-                        case 'ajout_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value;
-                            }
-                            break;
-                        case 'suppression_html':
-                            if (choice.action === 'reject') {
-                                mergedHTML += choice.value.outerHTML + '\n';
-                            }
-                            break;
-                        case 'modification_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value + '\n';
-                            } else if (choice.action === 'reject') {
-                                mergedHTML += choice.before.outerHTML + '\n';
-                            }
-                            break;
-                        case 'ajout_css':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedCSS += `.${choice.className} { /* Ajoutez vos styles ici */ }\n`;
-                            }
-                            break;
-                        case 'suppression_css':
-                            if (choice.action === 'reject') {
-                                mergedCSS += `.${change.className} { /* Styles supprimés conservés */ }\n`;
-                            }
-                            break;
-                        case 'ajout_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'suppression_js_function':
-                            if (choice.action === 'reject') {
-                                mergedJS += `function ${change.function.name}(${change.function.params.join(', ')}) {\n${change.function.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'modification_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `function ${change.before.name}(${change.before.params.join(', ')}) {\n${change.before.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'ajout_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            }
-                            break;
-                        case 'suppression_js_variable':
-                            if (choice.action === 'reject') {
-                                mergedJS += `var ${change.variable.name} = ${change.variable.init};\n`;
-                            }
-                            break;
-                        case 'modification_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `var ${change.before.name} = ${change.before.init};\n`;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                // Reconstruction du code fusionné
-                let finalHTML = mergedHTML.trim();
-                let finalCSS = mergedCSS.trim();
-                let finalJS = mergedJS.trim();
-
-                // Combiner les parties pour former un document HTML complet
-                const mergedCode = `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Fusco - Code Fusionné</title>
-    ${finalCSS ? `<style>\n${finalCSS}\n</style>` : ''}
-</head>
-<body>
-    ${finalHTML}
-    ${finalJS ? `<script>\n${finalJS}\n</script>` : ''}
-</body>
-</html>
-                `.trim();
-
-                // Afficher le code fusionné résolu
-                document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Fusion réussie!',
-                    text: 'Les codes ont été fusionnés avec succès.',
-                    confirmButtonColor: '#4A90E2'
-                });
-            }
-
-            // Fonction pour formater le code fusionné (ajouter des indentations)
-            function mergedCodeFormat(code) {
-                // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
-                return code;
-            }
-
-            // Fonction pour générer la description du changement
-            function generateChangeDescription(change, changeNumber) {
-                let description = `<div class="change-number">Changement ${changeNumber}</div>`;
-                switch (change.type) {
-                    case 'ajout_html':
-                        description += `<p><strong>Ajout d'un élément HTML :</strong></p><pre><code>${escapeHtml(change.component.outerHTML)}</code></pre>`;
-                        description += `<p>Un nouvel élément HTML a été ajouté. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_html':
-                        description += `<p><strong>Suppression d'un élément HTML :</strong></p><pre><code>${escapeHtml(change.component.outerHTML)}</code></pre>`;
-                        description += `<p>Un élément HTML a été supprimé. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_html':
-                        description += `<p><strong>Modification d'un élément HTML :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>${escapeHtml(change.before.outerHTML)}</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>${escapeHtml(change.after.outerHTML)}</code></pre>`;
-                        description += `<p>Un élément HTML a été modifié. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_css':
-                        description += `<p><strong>Ajout d'une classe CSS :</strong></p><pre><code>.${escapeHtml(change.className)} { /* Ajoutez vos styles ici */ }</code></pre>`;
-                        description += `<p>Une nouvelle classe CSS a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_css':
-                        description += `<p><strong>Suppression d'une classe CSS :</strong></p><pre><code>.${escapeHtml(change.className)} { /* Styles supprimés conservés */ }</code></pre>`;
-                        description += `<p>Une classe CSS a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_js_function':
-                        description += `<p><strong>Ajout d'une fonction JavaScript :</strong></p><pre><code>${escapeHtml(change.function.name)}(${change.function.params.join(', ')}) {\n${escapeHtml(change.function.body)}\n}</code></pre>`;
-                        description += `<p>Une nouvelle fonction JavaScript a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_js_function':
-                        description += `<p><strong>Suppression d'une fonction JavaScript :</strong></p><pre><code>${escapeHtml(change.function.name)}(${change.function.params.join(', ')}) {\n${escapeHtml(change.function.body)}\n}</code></pre>`;
-                        description += `<p>Une fonction JavaScript a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_js_function':
-                        description += `<p><strong>Modification d'une fonction JavaScript :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>${escapeHtml(change.before.name)}(${change.before.params.join(', ')}) {\n${escapeHtml(change.before.body)}\n}</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>${escapeHtml(change.after.name)}(${change.after.params.join(', ')}) {\n${escapeHtml(change.after.body)}\n}</code></pre>`;
-                        description += `<p>Une fonction JavaScript a été modifiée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'ajout_js_variable':
-                        description += `<p><strong>Ajout d'une variable JavaScript :</strong></p><pre><code>var ${escapeHtml(change.variable.name)} = ${escapeHtml(change.variable.init)};</code></pre>`;
-                        description += `<p>Une nouvelle variable JavaScript a été ajoutée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'suppression_js_variable':
-                        description += `<p><strong>Suppression d'une variable JavaScript :</strong></p><pre><code>var ${escapeHtml(change.variable.name)} = ${escapeHtml(change.variable.init)};</code></pre>`;
-                        description += `<p>Une variable JavaScript a été supprimée. Choisissez d'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    case 'modification_js_variable':
-                        description += `<p><strong>Modification d'une variable JavaScript :</strong></p>`;
-                        description += `<p><strong>Avant :</strong></p><pre><code>var ${escapeHtml(change.before.name)} = ${escapeHtml(change.before.init)};</code></pre>`;
-                        description += `<p><strong>Après :</strong></p><pre><code>var ${escapeHtml(change.after.name)} = ${escapeHtml(change.after.init)};</code></pre>`;
-                        description += `<p>Une variable JavaScript a été modifiée. Choisissez d'accepter, de rejeter ou de fournir une version personnalisée.</p>`;
-                        break;
-                    default:
-                        break;
-                }
-                return description;
-            }
-
-            // Fonction pour finaliser la fusion après tous les changements
-            function finalizeMerge() {
-                let mergedHTML = '';
-                let mergedCSS = '';
-                let mergedJS = '';
-
-                for (let i = 0; i < changes.length; i++) {
-                    const change = changes[i];
-                    const choice = userChoices[i];
-                    if (!choice) continue;
-
-                    switch (change.type) {
-                        case 'ajout_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value;
-                            }
-                            break;
-                        case 'suppression_html':
-                            if (choice.action === 'reject') {
-                                mergedHTML += choice.value.outerHTML + '\n';
-                            }
-                            break;
-                        case 'modification_html':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedHTML += choice.value + '\n';
-                            } else if (choice.action === 'reject') {
-                                mergedHTML += choice.before.outerHTML + '\n';
-                            }
-                            break;
-                        case 'ajout_css':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedCSS += `.${choice.className} { /* Ajoutez vos styles ici */ }\n`;
-                            }
-                            break;
-                        case 'suppression_css':
-                            if (choice.action === 'reject') {
-                                mergedCSS += `.${change.className} { /* Styles supprimés conservés */ }\n`;
-                            }
-                            break;
-                        case 'ajout_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'suppression_js_function':
-                            if (choice.action === 'reject') {
-                                mergedJS += `function ${change.function.name}(${change.function.params.join(', ')}) {\n${change.function.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'modification_js_function':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `function ${choice.value.name}(${choice.value.params.join(', ')}) {\n${choice.value.body}\n}\n\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `function ${change.before.name}(${change.before.params.join(', ')}) {\n${change.before.body}\n}\n\n`;
-                            }
-                            break;
-                        case 'ajout_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            }
-                            break;
-                        case 'suppression_js_variable':
-                            if (choice.action === 'reject') {
-                                mergedJS += `var ${change.variable.name} = ${change.variable.init};\n`;
-                            }
-                            break;
-                        case 'modification_js_variable':
-                            if (choice.action === 'accept' || choice.action === 'custom') {
-                                mergedJS += `var ${choice.value.name} = ${choice.value.init};\n`;
-                            } else if (choice.action === 'reject') {
-                                mergedJS += `var ${change.before.name} = ${change.before.init};\n`;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                // Reconstruction du code fusionné
-                let finalHTML = mergedHTML.trim();
-                let finalCSS = mergedCSS.trim();
-                let finalJS = mergedJS.trim();
-
-                // Combiner les parties pour former un document HTML complet
-                const mergedCode = `
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Fusco - Code Fusionné</title>
-    ${finalCSS ? `<style>\n${finalCSS}\n</style>` : ''}
-</head>
-<body>
-    ${finalHTML}
-    ${finalJS ? `<script>\n${finalJS}\n</script>` : ''}
-</body>
-</html>
-                `.trim();
-
-                // Afficher le code fusionné résolu
-                document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Fusion réussie!',
-                    text: 'Les codes ont été fusionnés avec succès.',
-                    confirmButtonColor: '#4A90E2'
-                });
-            }
-
-            // Fonction pour formater le code fusionné (ajouter des indentations)
-            function mergedCodeFormat(code) {
-                // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
-                return code;
-            }
-
-            // Fonction pour échapper les caractères HTML
-            function escapeHtml(text) {
-                const map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
-                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-            }
-        </script>
-    </body>
 </html>
