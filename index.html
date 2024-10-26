@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Fusco</title>
+    <title>Fusionneur de Code Avancé</title>
     <!-- Inclusion de la bibliothèque jsdiff via jsDelivr -->
     <script src="https://cdn.jsdelivr.net/npm/diff@7.0.0/dist/diff.min.js"></script>
     <!-- Inclusion de SweetAlert2 via CDN -->
@@ -153,10 +153,61 @@
         .custom-btn:hover {
             background-color: #e0a800 !important;
         }
+
+        /* Styles pour le contenu de code dans les popups */
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            width: 100%;
+            box-sizing: border-box;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        code {
+            font-family: monospace;
+            font-size: 14px;
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Styles personnalisés pour SweetAlert2 */
+        .swal2-popup {
+            width: calc(100% - 2cm) !important; /* 1cm de marge de chaque côté */
+            max-width: 800px !important;
+            height: 70vh !important;
+            max-height: 600px !important;
+            padding: 20px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .swal2-content {
+            width: 100%;
+            text-align: center;
+            overflow: auto;
+        }
+
+        .swal2-actions {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .ace_editor {
+            width: 100% !important;
+            height: 300px !important;
+        }
     </style>
 </head>
 <body>
-    <h1>Fusco</h1>
+    <h1>Fusionneur de Code Avancé</h1>
     <div class="container">
         <div class="textareas">
             <div class="textarea-container">
@@ -267,6 +318,8 @@
                         <button id="customBtn" class="swal2-styled custom-btn">Code Personnalisé</button>
                     </div>
                 `,
+                width: '90%', // Largeur du popup
+                heightAuto: false, // Désactiver l'ajustement automatique de la hauteur
                 showConfirmButton: false,
                 showCancelButton: false,
                 didOpen: () => {
@@ -333,7 +386,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Valider',
                     cancelButtonText: 'Annuler',
-                    width: '80%',
+                    width: '90%',
                     heightAuto: false,
                     allowOutsideClick: false,
                     didOpen: () => {
