@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!--
+    Process:
+    * Add component :
+     - Add MY COMPONENT to the HTML group : <button class="btn-js" onclick="addBlock('MY COMPONENT')">MY COMPONENT</button>
+     - Update getDefaultContent to provide default content :
+        ```
+        function getDefaultContent(type) {
+            const defaults = {
+                'MY COMPONENT': '<script>console.log("MY COMPONENT loaded");</script>',
+                'MY COMPONENT': '<script src="https://cdn.MYCOMPONENT.com/library.js"></script>',
+                // Autres valeurs par défaut pour les autres blocs
+            };
+            return defaults[type] || '';
+        }
+        ```
+     - Update GenerateHTML to include MY COMPONENT in the correct HTML section
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fusko</title>
@@ -424,7 +441,7 @@
                 'HTML Lang': '<html lang="en" />', // Valeur par défaut pour Lang
                 'HTML Title': '<title>My Page</title>',
                 'HTML Meta': '<meta charset="UTF-8">',
-                'HTML Script': '<!-- <script>console.log("Script component loaded");<\/script> -->',
+                'HTML Script': '<!-- <script>console.log("Script component loaded");<\/script> -->\n<script src="https://MYCDN.com"><\/script>',
                 'HTML Header': '<header>Header Content</header>',
                 'HTML Footer': '<footer>Footer Content</footer>',
                 'HTML Nav': '<nav>Navigation Links</nav>',
