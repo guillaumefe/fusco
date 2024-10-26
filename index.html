@@ -3,68 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Fusco - Fusionneur de Code Avancé</title>
-    <!-- Inclusion de SweetAlert2 via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Inclusion d'Ace Editor via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
-    <!-- Inclusion d'Esprima via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/esprima@4.0.1/dist/esprima.min.js"></script>
-    <!-- Inclusion d'Escodegen via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/escodegen@1.14.3/escodegen.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/escodegen@1.2.0/escodegen.browser.min.js"></script>
     <style>
-        /* Reset des marges et paddings */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        /* Style global */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f4f8;
             color: #333;
             padding: 20px;
         }
-
         h1 {
             text-align: center;
             margin-bottom: 20px;
             color: #4A90E2;
         }
-
-        /* Container principal */
         .container {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-
-        /* Textareas container */
         .textareas {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-
         @media (min-width: 768px) {
             .textareas {
                 flex-direction: row;
             }
         }
-
         .textarea-container {
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-
         label {
             margin-bottom: 5px;
             font-weight: bold;
             color: #333;
         }
-
         textarea {
             width: 100%;
             height: 200px;
@@ -77,13 +61,10 @@
             background-color: #fff;
             transition: border-color 0.3s;
         }
-
         textarea:focus {
             border-color: #4A90E2;
             outline: none;
         }
-
-        /* Bouton de fusion */
         #mergeBtn {
             padding: 15px 30px;
             font-size: 16px;
@@ -95,12 +76,9 @@
             align-self: center;
             transition: background-color 0.3s;
         }
-
         #mergeBtn:hover {
             background-color: #357ABD;
         }
-
-        /* Merged Code */
         #mergedCode {
             width: 100%;
             height: 300px;
@@ -112,8 +90,6 @@
             border-radius: 5px;
             background-color: #e9ecef;
         }
-
-        /* Boutons dans les popups */
         .swal2-styled {
             background-color: #4A90E2 !important;
             color: white !important;
@@ -125,38 +101,28 @@
             margin: 5px !important;
             transition: background-color 0.3s !important;
         }
-
         .swal2-styled:hover {
             background-color: #357ABD !important;
         }
-
-        /* Boutons spécifiques */
         .accept-btn {
             background-color: #28a745 !important;
         }
-
         .accept-btn:hover {
             background-color: #218838 !important;
         }
-
         .reject-btn {
             background-color: #dc3545 !important;
         }
-
         .reject-btn:hover {
             background-color: #c82333 !important;
         }
-
         .custom-btn {
             background-color: #FFC107 !important;
             color: #212529 !important;
         }
-
         .custom-btn:hover {
             background-color: #e0a800 !important;
         }
-
-        /* Styles pour le contenu de code dans les popups */
         pre {
             background-color: #f8f9fa;
             padding: 10px;
@@ -169,7 +135,6 @@
             max-height: 200px;
             overflow-y: auto;
         }
-
         code {
             font-family: monospace;
             font-size: 14px;
@@ -177,10 +142,8 @@
             white-space: pre-wrap;
             word-wrap: break-word;
         }
-
-        /* Styles personnalisés pour SweetAlert2 */
         .swal2-popup {
-            width: calc(100% - 2cm) !important; /* 1cm de marge de chaque côté */
+            width: 90% !important;
             max-width: 800px !important;
             height: 70vh !important;
             max-height: 600px !important;
@@ -190,39 +153,46 @@
             justify-content: center;
             align-items: center;
         }
-
         .swal2-content {
             width: 100%;
-            text-align: center;
+            text-align: left;
             overflow: auto;
         }
-
         .swal2-actions {
             width: 100%;
             display: flex;
             justify-content: center;
             margin-top: 20px;
         }
-
         .ace_editor {
             width: 100% !important;
             height: 300px !important;
         }
-
-        /* Discreet numbering */
         .change-number {
             font-size: 12px;
             color: #777;
             margin-bottom: 10px;
         }
-
-        /* Navigation buttons */
         .navigation-group button {
             background-color: #6c757d !important;
         }
-
         .navigation-group button:hover {
             background-color: #5a6268 !important;
+        }
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .code-block {
+            flex: 1;
+            width: 100%;
+        }
+        .code-title {
+            font-weight: bold;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -243,9 +213,7 @@
         <h2>Code Fusionné :</h2>
         <textarea id="mergedCode" readonly></textarea>
     </div>
-
     <script>
-        // Vérifier que escodegen est chargé
         if (typeof escodegen === 'undefined') {
             console.error('Escodegen n\'est pas chargé correctement.');
             Swal.fire({
@@ -255,17 +223,15 @@
                 confirmButtonColor: '#4A90E2'
             });
         }
-
-        // Stockage global des changements
         var changes = [];
         var userChoices = [];
         var currentChangeIndex = 0;
-
-        document.getElementById('mergeBtn').addEventListener('click', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('mergeBtn').addEventListener('click', handleMerge);
+        });
+        function handleMerge() {
             var code1 = document.getElementById('code1').value;
             var code2 = document.getElementById('code2').value;
-
-            // Vérification des entrées
             if (!code1.trim() && !code2.trim()) {
                 Swal.fire({
                     icon: 'warning',
@@ -275,28 +241,18 @@
                 });
                 return;
             }
-
-            // Séparation des parties HTML, CSS et JS pour les deux codes
             var parts1 = parseCode(code1);
             var parts2 = parseCode(code2);
-
             console.log('Parts Code 1:', parts1);
             console.log('Parts Code 2:', parts2);
-
-            // Extraction des composants
             var components1 = extractAllComponents(parts1);
             var components2 = extractAllComponents(parts2);
-
             console.log('Composants Code 1:', components1);
             console.log('Composants Code 2:', components2);
-
-            // Comparaison des composants
             changes = compareAllComponents(components1, components2);
             userChoices = new Array(changes.length).fill(null);
             currentChangeIndex = 0;
-
             console.log('Changements détectés:', changes);
-
             if (changes.length === 0) {
                 Swal.fire({
                     icon: 'info',
@@ -306,39 +262,26 @@
                 });
                 return;
             }
-
-            // Commencer la revue des changements
             showChange(currentChangeIndex);
-        });
-
-        // Fonction pour parser le code en HTML, CSS et JS
+        }
         function parseCode(code) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(code, 'text/html');
-
-            // Extraction du HTML (le body)
             var html = doc.body.innerHTML.trim();
-
-            // Extraction du CSS (contenu des balises <style>)
             var styleTags = doc.querySelectorAll('style');
             var css = '';
             styleTags.forEach(function(style) {
                 css += style.innerHTML + '\n';
             });
             css = css.trim();
-
-            // Extraction du JavaScript (contenu des balises <script> sans src)
             var scriptTags = doc.querySelectorAll('script:not([src])');
             var js = '';
             scriptTags.forEach(function(script) {
                 js += script.innerHTML + '\n';
             });
             js = js.trim();
-
             return { html: html, css: css, js: js };
         }
-
-        // Fonction pour extraire tous les composants
         function extractAllComponents(parts) {
             return {
                 html: extractHTMLComponents(parts.html),
@@ -346,14 +289,10 @@
                 js: extractJSComponents(parts.js)
             };
         }
-
-        // Extraction des composants HTML
         function extractHTMLComponents(html) {
             var parser = new DOMParser();
             var doc = parser.parseFromString(html, 'text/html');
             var elements = [];
-
-            // Fonction de traversal
             function traverse(node) {
                 node.childNodes.forEach(function(child) {
                     if (child.nodeType === Node.ELEMENT_NODE) {
@@ -366,26 +305,19 @@
                             attributes: attrs,
                             outerHTML: child.outerHTML
                         });
-                        traverse(child); // Recursion
+                        traverse(child);
                     }
                 });
             }
-
             traverse(doc.body);
             return elements;
         }
-
-        // Extraction des classes CSS
         function extractCSSClasses(css) {
             var classes = [];
             if (!css) return classes;
-
-            // Création d'un élément style pour parser le CSS
             var style = document.createElement('style');
             style.innerHTML = css;
             document.head.appendChild(style);
-
-            // Parcourir les règles CSS
             try {
                 var sheet = style.sheet;
                 if (sheet) {
@@ -405,19 +337,13 @@
             } catch (e) {
                 console.error('Erreur lors de l\'analyse CSS:', e);
             }
-
-            // Nettoyage
             document.head.removeChild(style);
             return classes;
         }
-
-        // Extraction des composants JavaScript
         function extractJSComponents(js) {
             var functions = [];
             var variables = [];
-
             if (!js) return { functions: functions, variables: variables };
-
             try {
                 var ast = esprima.parseScript(js, { tolerant: true });
                 traverseAST(ast, function(node) {
@@ -439,11 +365,8 @@
             } catch (e) {
                 console.error('Erreur lors de l\'analyse JavaScript:', e);
             }
-
             return { functions: functions, variables: variables };
         }
-
-        // Traverser l'AST
         function traverseAST(node, callback) {
             callback(node);
             for (var key in node) {
@@ -461,41 +384,26 @@
                 }
             }
         }
-
-        // Comparaison des composants
         function compareAllComponents(components1, components2) {
             var allChanges = [];
-
-            // Comparaison HTML
             var htmlChanges = compareHTMLComponents(components1.html, components2.html);
             allChanges = allChanges.concat(htmlChanges);
-
-            // Comparaison CSS
             var cssChanges = compareCSSClasses(components1.css, components2.css);
             allChanges = allChanges.concat(cssChanges);
-
-            // Comparaison JS
             var jsChanges = compareJSComponents(components1.js, components2.js);
             allChanges = allChanges.concat(jsChanges);
-
             return allChanges;
         }
-
-        // Comparaison des composants HTML
         function compareHTMLComponents(html1, html2) {
             var changes = [];
-
             var map1 = new Map();
             html1.forEach(function(comp) {
                 map1.set(comp.outerHTML, comp);
             });
-
             var map2 = new Map();
             html2.forEach(function(comp) {
                 map2.set(comp.outerHTML, comp);
             });
-
-            // Ajouts
             html2.forEach(function(comp) {
                 if (!map1.has(comp.outerHTML)) {
                     changes.push({
@@ -504,8 +412,6 @@
                     });
                 }
             });
-
-            // Suppressions
             html1.forEach(function(comp) {
                 if (!map2.has(comp.outerHTML)) {
                     changes.push({
@@ -514,9 +420,6 @@
                     });
                 }
             });
-
-            // Modifications basiques (ici, on considère une modification si une balise similaire existe mais avec des attributs différents)
-            // Cette logique peut être améliorée pour des comparaisons plus sophistiquées
             html1.forEach(function(comp1) {
                 html2.forEach(function(comp2) {
                     if (comp1.tag === comp2.tag) {
@@ -532,18 +435,12 @@
                     }
                 });
             });
-
             return changes;
         }
-
-        // Comparaison des classes CSS
         function compareCSSClasses(css1, css2) {
             var changes = [];
-
             var set1 = new Set(css1);
             var set2 = new Set(css2);
-
-            // Ajouts
             css2.forEach(function(cls) {
                 if (!set1.has(cls)) {
                     changes.push({
@@ -552,8 +449,6 @@
                     });
                 }
             });
-
-            // Suppressions
             css1.forEach(function(cls) {
                 if (!set2.has(cls)) {
                     changes.push({
@@ -562,26 +457,18 @@
                     });
                 }
             });
-
             return changes;
         }
-
-        // Comparaison des composants JavaScript
         function compareJSComponents(js1, js2) {
             var changes = [];
-
-            // Comparaison des fonctions
             var funcMap1 = new Map();
             js1.functions.forEach(function(func) {
                 funcMap1.set(func.name, func);
             });
-
             var funcMap2 = new Map();
             js2.functions.forEach(function(func) {
                 funcMap2.set(func.name, func);
             });
-
-            // Ajouts de fonctions
             js2.functions.forEach(function(func) {
                 if (!funcMap1.has(func.name)) {
                     changes.push({
@@ -590,8 +477,6 @@
                     });
                 }
             });
-
-            // Suppressions de fonctions
             js1.functions.forEach(function(func) {
                 if (!funcMap2.has(func.name)) {
                     changes.push({
@@ -600,8 +485,6 @@
                     });
                 }
             });
-
-            // Modifications de fonctions
             js1.functions.forEach(function(func1) {
                 if (funcMap2.has(func1.name)) {
                     var func2 = funcMap2.get(func1.name);
@@ -614,19 +497,14 @@
                     }
                 }
             });
-
-            // Comparaison des variables
             var varMap1 = new Map();
             js1.variables.forEach(function(variable) {
                 varMap1.set(variable.name, variable);
             });
-
             var varMap2 = new Map();
             js2.variables.forEach(function(variable) {
                 varMap2.set(variable.name, variable);
             });
-
-            // Ajouts de variables
             js2.variables.forEach(function(variable) {
                 if (!varMap1.has(variable.name)) {
                     changes.push({
@@ -635,8 +513,6 @@
                     });
                 }
             });
-
-            // Suppressions de variables
             js1.variables.forEach(function(variable) {
                 if (!varMap2.has(variable.name)) {
                     changes.push({
@@ -645,8 +521,6 @@
                     });
                 }
             });
-
-            // Modifications de variables
             js1.variables.forEach(function(variable1) {
                 if (varMap2.has(variable1.name)) {
                     var variable2 = varMap2.get(variable1.name);
@@ -659,35 +533,18 @@
                     }
                 }
             });
-
             return changes;
         }
-
-        // Fonction pour afficher un changement spécifique
         function showChange(index) {
             if (index < 0 || index >= changes.length) return;
-
             var change = changes[index];
             var changeNumber = index + 1;
             currentChangeIndex = index;
-
-            // Générer la description du changement
             var description = generateChangeDescription(change, changeNumber);
-
-            // Afficher le popup avec les options et les boutons de navigation
             Swal.fire({
-                html: description +
-                      '<div class="button-group" style="margin-top:20px;">' +
-                          '<button id="acceptBtn" class="swal2-styled accept-btn">Oui</button>' +
-                          '<button id="rejectBtn" class="swal2-styled reject-btn">Non</button>' +
-                          '<button id="customBtn" class="swal2-styled custom-btn">Code Personnalisé</button>' +
-                      '</div>' +
-                      '<div class="navigation-group" style="margin-top:20px;">' +
-                          '<button id="prevBtn" class="swal2-styled">Précédent</button>' +
-                          '<button id="nextBtn" class="swal2-styled">Suivant</button>' +
-                      '</div>',
-                width: '90%', // Largeur du popup
-                heightAuto: false, // Désactiver l'ajustement automatique de la hauteur
+                html: description,
+                width: '90%',
+                heightAuto: false,
                 showConfirmButton: false,
                 showCancelButton: false,
                 allowOutsideClick: false,
@@ -697,8 +554,6 @@
                     var customBtn = Swal.getPopup().querySelector('#customBtn');
                     var prevBtn = Swal.getPopup().querySelector('#prevBtn');
                     var nextBtn = Swal.getPopup().querySelector('#nextBtn');
-
-                    // Gestion des boutons de navigation
                     if (currentChangeIndex === 0) {
                         prevBtn.disabled = true;
                         prevBtn.style.backgroundColor = '#ccc';
@@ -709,103 +564,92 @@
                         nextBtn.style.backgroundColor = '#ccc';
                         nextBtn.style.cursor = 'not-allowed';
                     }
-
                     acceptBtn.addEventListener('click', function() {
                         userChoices[currentChangeIndex] = { action: 'accept', value: getAcceptedValue(change) };
                         Swal.close();
-                        // Passer au changement suivant ou finaliser
-                        if (currentChangeIndex < changes.length -1) {
-                            showChange(currentChangeIndex +1);
-                        } else {
-                            finalizeMerge();
-                        }
+                        navigateNext();
                     });
-
                     rejectBtn.addEventListener('click', function() {
                         userChoices[currentChangeIndex] = { action: 'reject', value: getRejectedValue(change) };
                         Swal.close();
-                        // Passer au changement suivant ou finaliser
-                        if (currentChangeIndex < changes.length -1) {
-                            showChange(currentChangeIndex +1);
-                        } else {
-                            finalizeMerge();
-                        }
+                        navigateNext();
                     });
-
                     customBtn.addEventListener('click', function() {
-                        // Afficher Ace Editor pour entrer du code personnalisé
-                        Swal.fire({
-                            title: 'Code Personnalisé - Changement ' + changeNumber,
-                            html: '<div id="aceEditor" style="width: 100%; height: 300px;"></div>',
-                            showCancelButton: true,
-                            confirmButtonText: 'Valider',
-                            cancelButtonText: 'Annuler',
-                            width: '90%',
-                            heightAuto: false,
-                            allowOutsideClick: false,
-                            didOpen: function() {
-                                var editor = ace.edit("aceEditor");
-                                editor.setTheme("ace/theme/github");
-                                // Déterminer le mode en fonction du type de changement
-                                var mode = "ace/mode/javascript";
-                                if (change.type.indexOf('html') !== -1) {
-                                    mode = "ace/mode/html";
-                                } else if (change.type.indexOf('css') !== -1) {
-                                    mode = "ace/mode/css";
-                                }
-                                editor.session.setMode(mode);
-                                var initialCode = generateInitialCustomCode(change, changeNumber);
-                                editor.setValue(initialCode, -1); // -1 pour ne pas déplacer le curseur
-                                editor.focus();
-                            },
-                            preConfirm: function() {
-                                var resolution = ace.edit("aceEditor").getValue();
-                                if (!resolution.trim()) {
-                                    Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
-                                }
-                                return resolution;
-                            }
-                        }).then(function(result) {
-                            if (result.isConfirmed) {
-                                userChoices[currentChangeIndex] = { action: 'custom', value: result.value };
-                                Swal.close();
-                                // Passer au changement suivant ou finaliser
-                                if (currentChangeIndex < changes.length -1) {
-                                    showChange(currentChangeIndex +1);
-                                } else {
-                                    finalizeMerge();
-                                }
-                            } else {
-                                // L'utilisateur a annulé l'édition personnalisée, rester sur le changement actuel
-                                showChange(currentChangeIndex);
-                            }
-                        });
+                        showCustomCodeEditor(change, changeNumber);
                     });
-
                     prevBtn.addEventListener('click', function() {
                         Swal.close();
-                        showChange(currentChangeIndex -1);
+                        showChange(currentChangeIndex - 1);
                     });
-
                     nextBtn.addEventListener('click', function() {
                         Swal.close();
-                        showChange(currentChangeIndex +1);
+                        showChange(currentChangeIndex + 1);
                     });
                 }
             });
         }
-
-        // Fonction pour finaliser la fusion après tous les changements
+        function navigateNext() {
+            if (currentChangeIndex < changes.length - 1) {
+                showChange(currentChangeIndex + 1);
+            } else {
+                finalizeMerge();
+            }
+        }
+        function showCustomCodeEditor(change, changeNumber) {
+            var editorMode = determineEditorMode(change.type);
+            var initialCode = generateInitialCustomCode(change, changeNumber);
+            Swal.fire({
+                title: 'Code Personnalisé - Changement ' + changeNumber,
+                html: '<div id="aceEditor" style="width: 100%; height: 300px;"></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Valider',
+                cancelButtonText: 'Annuler',
+                width: '90%',
+                heightAuto: false,
+                allowOutsideClick: false,
+                didOpen: function() {
+                    var editor = ace.edit("aceEditor");
+                    editor.setTheme("ace/theme/github");
+                    editor.session.setMode(editorMode);
+                    editor.setValue(initialCode, -1);
+                    editor.focus();
+                },
+                preConfirm: function() {
+                    var resolution = ace.edit("aceEditor").getValue();
+                    if (!resolution.trim()) {
+                        Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
+                    }
+                    return resolution;
+                }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    userChoices[currentChangeIndex] = { action: 'custom', value: result.value };
+                    Swal.close();
+                    navigateNext();
+                } else {
+                    showChange(currentChangeIndex);
+                }
+            });
+        }
+        function determineEditorMode(changeType) {
+            if (changeType.indexOf('html') !== -1) {
+                return "ace/mode/html";
+            } else if (changeType.indexOf('css') !== -1) {
+                return "ace/mode/css";
+            } else if (changeType.indexOf('js') !== -1) {
+                return "ace/mode/javascript";
+            } else {
+                return "ace/mode/text";
+            }
+        }
         function finalizeMerge() {
             var mergedHTML = '';
             var mergedCSS = '';
             var mergedJS = '';
-
             for (var i = 0; i < changes.length; i++) {
                 var change = changes[i];
                 var choice = userChoices[i];
                 if (!choice) continue;
-
                 switch (change.type) {
                     case 'ajout_html':
                         if (choice.action === 'accept' || choice.action === 'custom') {
@@ -872,13 +716,9 @@
                         break;
                 }
             }
-
-            // Reconstruction du code fusionné
             var finalHTML = mergedHTML.trim();
             var finalCSS = mergedCSS.trim();
             var finalJS = mergedJS.trim();
-
-            // Combiner les parties pour former un document HTML complet
             var mergedCode = '<!DOCTYPE html>\n' +
                              '<html lang="fr">\n' +
                              '<head>\n' +
@@ -888,11 +728,9 @@
                              '</head>\n' +
                              '<body>\n' +
                              finalHTML + '\n' +
-                             (finalJS ? '<script>\n' + finalJS + '\n</script>\n' : '') +
+                             finalJS + '\n' +
                              '</body>\n' +
                              '</html>';
-
-            // Afficher le code fusionné résolu
             document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
             Swal.fire({
                 icon: 'success',
@@ -901,39 +739,30 @@
                 confirmButtonColor: '#4A90E2'
             });
         }
-
-        // Fonction pour formater le code fusionné (ajouter des indentations)
         function mergedCodeFormat(code) {
-            // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
             return code;
         }
-
-        // Fonctions pour obtenir les valeurs acceptées ou rejetées
         function getAcceptedValue(change) {
             switch (change.type) {
                 case 'ajout_html':
                     return change.component.outerHTML + '\n';
                 case 'suppression_html':
-                    // Accepter une suppression signifie ne rien ajouter
                     return '';
                 case 'modification_html':
                     return change.after.outerHTML + '\n';
                 case 'ajout_css':
                     return '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
                 case 'suppression_css':
-                    // Accepter une suppression signifie ne rien ajouter
                     return '';
                 case 'ajout_js_function':
                     return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
                 case 'suppression_js_function':
-                    // Accepter une suppression signifie ne rien ajouter
                     return '';
                 case 'modification_js_function':
                     return 'function ' + change.after.name + '(' + change.after.params.join(', ') + ') {\n' + change.after.body + '\n}\n\n';
                 case 'ajout_js_variable':
                     return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
                 case 'suppression_js_variable':
-                    // Accepter une suppression signifie ne rien ajouter
                     return '';
                 case 'modification_js_variable':
                     return 'var ' + change.after.name + ' = ' + change.after.init + ';\n';
@@ -941,36 +770,27 @@
                     return '';
             }
         }
-
         function getRejectedValue(change) {
             switch (change.type) {
                 case 'ajout_html':
-                    // Rejeter un ajout signifie ne rien ajouter
                     return '';
                 case 'suppression_html':
-                    // Rejeter une suppression signifie garder le code supprimé
                     return change.component.outerHTML + '\n';
                 case 'modification_html':
                     return change.before.outerHTML + '\n';
                 case 'ajout_css':
-                    // Rejeter un ajout signifie ne rien ajouter
                     return '';
                 case 'suppression_css':
-                    // Rejeter une suppression signifie garder le code supprimé
                     return '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
                 case 'ajout_js_function':
-                    // Rejeter un ajout signifie ne rien ajouter
                     return '';
                 case 'suppression_js_function':
-                    // Rejeter une suppression signifie garder la fonction supprimée
                     return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
                 case 'modification_js_function':
                     return 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
                 case 'ajout_js_variable':
-                    // Rejeter un ajout signifie ne rien ajouter
                     return '';
                 case 'suppression_js_variable':
-                    // Rejeter une suppression signifie garder la variable supprimée
                     return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
                 case 'modification_js_variable':
                     return 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
@@ -978,78 +798,201 @@
                     return '';
             }
         }
-
-        // Fonction pour générer la description du changement
         function generateChangeDescription(change, changeNumber) {
             var description = '<div class="change-number">Changement ' + changeNumber + '</div>';
+            description += '<div class="code-section">';
             switch (change.type) {
                 case 'ajout_html':
-                    description += '<p><strong>Ajout d\'un élément HTML :</strong></p><pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>';
-                    description += '<p>Un nouvel élément HTML a été ajouté. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Élément Ajouté :</div>' +
+                                   '<pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>' +
+                                   '</div>';
                     break;
                 case 'suppression_html':
-                    description += '<p><strong>Suppression d\'un élément HTML :</strong></p><pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>';
-                    description += '<p>Un élément HTML a été supprimé. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Élément Supprimé :</div>' +
+                                   '<pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>' +
+                                   '</div>';
                     break;
                 case 'modification_html':
-                    description += '<p><strong>Modification d\'un élément HTML :</strong></p>';
-                    description += '<p><strong>Avant :</strong></p><pre><code>' + escapeHtml(change.before.outerHTML) + '</code></pre>';
-                    description += '<p><strong>Après :</strong></p><pre><code>' + escapeHtml(change.after.outerHTML) + '</code></pre>';
-                    description += '<p>Un élément HTML a été modifié. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Avant :</div>' +
+                                   '<pre><code>' + escapeHtml(change.before.outerHTML) + '</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Après :</div>' +
+                                   '<pre><code>' + escapeHtml(change.after.outerHTML) + '</code></pre>' +
+                                   '</div>';
                     break;
                 case 'ajout_css':
-                    description += '<p><strong>Ajout d\'une classe CSS :</strong></p><pre><code>.' + escapeHtml(change.className) + ' { /* Ajoutez vos styles ici */ }</code></pre>';
-                    description += '<p>Une nouvelle classe CSS a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Classe CSS Ajoutée :</div>' +
+                                   '<pre><code>.' + escapeHtml(change.className) + ' { /* Ajoutez vos styles ici */ }</code></pre>' +
+                                   '</div>';
                     break;
                 case 'suppression_css':
-                    description += '<p><strong>Suppression d\'une classe CSS :</strong></p><pre><code>.' + escapeHtml(change.className) + ' { /* Styles supprimés conservés */ }</code></pre>';
-                    description += '<p>Une classe CSS a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Classe CSS Supprimée :</div>' +
+                                   '<pre><code>.' + escapeHtml(change.className) + ' { /* Styles supprimés conservés */ }</code></pre>' +
+                                   '</div>';
                     break;
                 case 'ajout_js_function':
-                    description += '<p><strong>Ajout d\'une fonction JavaScript :</strong></p><pre><code>' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>';
-                    description += '<p>Une nouvelle fonction JavaScript a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Ajoutée :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>' +
+                                   '</div>';
                     break;
                 case 'suppression_js_function':
-                    description += '<p><strong>Suppression d\'une fonction JavaScript :</strong></p><pre><code>' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>';
-                    description += '<p>Une fonction JavaScript a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Supprimée :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>' +
+                                   '</div>';
                     break;
                 case 'modification_js_function':
-                    description += '<p><strong>Modification d\'une fonction JavaScript :</strong></p>';
-                    description += '<p><strong>Avant :</strong></p><pre><code>' + escapeHtml(change.before.name) + '(' + change.before.params.join(', ') + ') {\n' + escapeHtml(change.before.body) + '\n}</code></pre>';
-                    description += '<p><strong>Après :</strong></p><pre><code>' + escapeHtml(change.after.name) + '(' + change.after.params.join(', ') + ') {\n' + escapeHtml(change.after.body) + '\n}</code></pre>';
-                    description += '<p>Une fonction JavaScript a été modifiée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Avant :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.before.name) + '(' + change.before.params.join(', ') + ') {\n' + escapeHtml(change.before.body) + '\n}</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Après :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.after.name) + '(' + change.after.params.join(', ') + ') {\n' + escapeHtml(change.after.body) + '\n}</code></pre>' +
+                                   '</div>';
                     break;
                 case 'ajout_js_variable':
-                    description += '<p><strong>Ajout d\'une variable JavaScript :</strong></p><pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>';
-                    description += '<p>Une nouvelle variable JavaScript a été ajoutée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Ajoutée :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>' +
+                                   '</div>';
                     break;
                 case 'suppression_js_variable':
-                    description += '<p><strong>Suppression d\'une variable JavaScript :</strong></p><pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>';
-                    description += '<p>Une variable JavaScript a été supprimée. Choisissez d\'accepter la suppression, de la rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Supprimée :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>' +
+                                   '</div>';
                     break;
                 case 'modification_js_variable':
-                    description += '<p><strong>Modification d\'une variable JavaScript :</strong></p>';
-                    description += '<p><strong>Avant :</strong></p><pre><code>var ' + escapeHtml(change.before.name) + ' = ' + escapeHtml(change.before.init) + ';</code></pre>';
-                    description += '<p><strong>Après :</strong></p><pre><code>var ' + escapeHtml(change.after.name) + ' = ' + escapeHtml(change.after.init) + ';</code></pre>';
-                    description += '<p>Une variable JavaScript a été modifiée. Choisissez d\'accepter, de rejeter ou de fournir une version personnalisée.</p>';
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Avant :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.before.name) + ' = ' + escapeHtml(change.before.init) + ';</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Après :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.after.name) + ' = ' + escapeHtml(change.after.init) + ';</code></pre>' +
+                                   '</div>';
                     break;
                 default:
                     break;
             }
-            return description;
+            description += '</div>';
+            Swal.fire({
+                html: description,
+                width: '90%',
+                heightAuto: false,
+                showConfirmButton: false,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                didOpen: function() {
+                    var acceptBtn = Swal.getPopup().querySelector('#acceptBtn');
+                    var rejectBtn = Swal.getPopup().querySelector('#rejectBtn');
+                    var customBtn = Swal.getPopup().querySelector('#customBtn');
+                    var prevBtn = Swal.getPopup().querySelector('#prevBtn');
+                    var nextBtn = Swal.getPopup().querySelector('#nextBtn');
+                    if (currentChangeIndex === 0) {
+                        prevBtn.disabled = true;
+                        prevBtn.style.backgroundColor = '#ccc';
+                        prevBtn.style.cursor = 'not-allowed';
+                    }
+                    if (currentChangeIndex === changes.length -1) {
+                        nextBtn.disabled = true;
+                        nextBtn.style.backgroundColor = '#ccc';
+                        nextBtn.style.cursor = 'not-allowed';
+                    }
+                    acceptBtn.addEventListener('click', function() {
+                        userChoices[currentChangeIndex] = { action: 'accept', value: getAcceptedValue(change) };
+                        Swal.close();
+                        navigateNext();
+                    });
+                    rejectBtn.addEventListener('click', function() {
+                        userChoices[currentChangeIndex] = { action: 'reject', value: getRejectedValue(change) };
+                        Swal.close();
+                        navigateNext();
+                    });
+                    customBtn.addEventListener('click', function() {
+                        showCustomCodeEditor(change, changeNumber);
+                    });
+                    prevBtn.addEventListener('click', function() {
+                        Swal.close();
+                        showChange(currentChangeIndex - 1);
+                    });
+                    nextBtn.addEventListener('click', function() {
+                        Swal.close();
+                        showChange(currentChangeIndex + 1);
+                    });
+                }
+            });
         }
-
-        // Fonction pour finaliser la fusion après tous les changements
+        function navigateNext() {
+            if (currentChangeIndex < changes.length - 1) {
+                showChange(currentChangeIndex + 1);
+            } else {
+                finalizeMerge();
+            }
+        }
+        function showCustomCodeEditor(change, changeNumber) {
+            var editorMode = determineEditorMode(change.type);
+            var initialCode = generateInitialCustomCode(change, changeNumber);
+            Swal.fire({
+                title: 'Code Personnalisé - Changement ' + changeNumber,
+                html: '<div id="aceEditor" style="width: 100%; height: 300px;"></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Valider',
+                cancelButtonText: 'Annuler',
+                width: '90%',
+                heightAuto: false,
+                allowOutsideClick: false,
+                didOpen: function() {
+                    var editor = ace.edit("aceEditor");
+                    editor.setTheme("ace/theme/github");
+                    editor.session.setMode(editorMode);
+                    editor.setValue(initialCode, -1);
+                    editor.focus();
+                },
+                preConfirm: function() {
+                    var resolution = ace.edit("aceEditor").getValue();
+                    if (!resolution.trim()) {
+                        Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
+                    }
+                    return resolution;
+                }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    userChoices[currentChangeIndex] = { action: 'custom', value: result.value };
+                    Swal.close();
+                    navigateNext();
+                } else {
+                    showChange(currentChangeIndex);
+                }
+            });
+        }
+        function determineEditorMode(changeType) {
+            if (changeType.indexOf('html') !== -1) {
+                return "ace/mode/html";
+            } else if (changeType.indexOf('css') !== -1) {
+                return "ace/mode/css";
+            } else if (changeType.indexOf('js') !== -1) {
+                return "ace/mode/javascript";
+            } else {
+                return "ace/mode/text";
+            }
+        }
         function finalizeMerge() {
             var mergedHTML = '';
             var mergedCSS = '';
             var mergedJS = '';
-
             for (var i = 0; i < changes.length; i++) {
                 var change = changes[i];
                 var choice = userChoices[i];
                 if (!choice) continue;
-
                 switch (change.type) {
                     case 'ajout_html':
                         if (choice.action === 'accept' || choice.action === 'custom') {
@@ -1116,13 +1059,9 @@
                         break;
                 }
             }
-
-            // Reconstruction du code fusionné
             var finalHTML = mergedHTML.trim();
             var finalCSS = mergedCSS.trim();
             var finalJS = mergedJS.trim();
-
-            // Combiner les parties pour former un document HTML complet
             var mergedCode = '<!DOCTYPE html>\n' +
                              '<html lang="fr">\n' +
                              '<head>\n' +
@@ -1132,11 +1071,9 @@
                              '</head>\n' +
                              '<body>\n' +
                              finalHTML + '\n' +
-                             (finalJS ? '<script>\n' + finalJS + '\n</script>\n' : '') +
+                             finalJS + '\n' +
                              '</body>\n' +
                              '</html>';
-
-            // Afficher le code fusionné résolu
             document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
             Swal.fire({
                 icon: 'success',
@@ -1145,14 +1082,9 @@
                 confirmButtonColor: '#4A90E2'
             });
         }
-
-        // Fonction pour formater le code fusionné (ajouter des indentations)
         function mergedCodeFormat(code) {
-            // Simple mise en forme; pour une meilleure mise en forme, envisagez d'utiliser une bibliothèque comme Prettier
             return code;
         }
-
-        // Fonction pour échapper les caractères HTML
         function escapeHtml(text) {
             var map = {
                 '&': '&amp;',
@@ -1163,75 +1095,348 @@
             };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
-
-        // Fonction pour générer le contenu initial de la résolution personnalisée dans Ace Editor
-        function generateInitialCustomCode(change, changeNumber) {
-            var initialCode = '';
-            if (change.type.indexOf('html') !== -1) {
-                if (change.type === 'modification_html') {
-                    initialCode = '// Résolution de la modification ' + changeNumber + '\n' +
-                                 '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
-                                 '// Avant :\n' + change.before.outerHTML + '\n\n' +
-                                 '// Après :\n' + change.after.outerHTML;
-                } else if (change.type === 'suppression_html') {
-                    initialCode = '// Résolution de la suppression ' + changeNumber + '\n' +
-                                 '// Si vous souhaitez réintégrer l\'élément HTML supprimé, modifiez le ci-dessous.\n\n' +
-                                 '// Élément supprimé :\n' + change.component.outerHTML;
-                } else if (change.type === 'ajout_html') {
-                    initialCode = '// Résolution de l\'ajout ' + changeNumber + '\n' +
-                                 '// Si vous souhaitez modifier l\'ajout, éditez l\'élément HTML ci-dessous.\n\n' +
-                                 '// Élément ajouté :\n' + change.component.outerHTML;
-                }
-            } else if (change.type.indexOf('css') !== -1) {
-                if (change.type === 'modification_css') {
-                    initialCode = '// Résolution de la modification CSS ' + changeNumber + '\n' +
-                                 '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
-                                 '// Avant :\n' + '.' + change.before.className + ' { /* Styles avant */ }\n\n' +
-                                 '// Après :\n' + '.' + change.after.className + ' { /* Styles après */ }';
-                } else if (change.type === 'suppression_css') {
-                    initialCode = '// Résolution de la suppression CSS ' + changeNumber + '\n' +
-                                 '// Si vous souhaitez réintégrer la classe CSS supprimée, modifiez le ci-dessous.\n\n' +
-                                 '// Classe supprimée :\n.' + change.className + ' { /* Styles supprimés */ }';
-                } else if (change.type === 'ajout_css') {
-                    initialCode = '// Résolution de l\'ajout CSS ' + changeNumber + '\n' +
-                                 '// Si vous souhaitez modifier l\'ajout, éditez la classe CSS ci-dessous.\n\n' +
-                                 '// Classe ajoutée :\n.' + change.className + ' { /* Ajoutez vos styles ici */ }';
-                }
-            } else if (change.type.indexOf('js') !== -1) {
-                if (change.type.indexOf('function') !== -1) {
-                    if (change.type === 'modification_js_function') {
-                        initialCode = '// Résolution de la modification de la fonction ' + changeNumber + '\n' +
-                                     '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
-                                     '// Avant :\n' + 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n' +
-                                     '// Après :\n' + 'function ' + change.after.name + '(' + change.after.params.join(', ') + ') {\n' + change.after.body + '\n}';
-                    } else if (change.type === 'suppression_js_function') {
-                        initialCode = '// Résolution de la suppression de la fonction ' + changeNumber + '\n' +
-                                     '// Si vous souhaitez réintégrer la fonction JavaScript supprimée, modifiez le ci-dessous.\n\n' +
-                                     '// Fonction supprimée :\n' + 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}';
-                    } else if (change.type === 'ajout_js_function') {
-                        initialCode = '// Résolution de l\'ajout de la fonction ' + changeNumber + '\n' +
-                                     '// Si vous souhaitez modifier l\'ajout, éditez la fonction JavaScript ci-dessous.\n\n' +
-                                     '// Fonction ajoutée :\n' + 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}';
+        function getAcceptedValue(change) {
+            switch (change.type) {
+                case 'ajout_html':
+                    return change.component.outerHTML + '\n';
+                case 'suppression_html':
+                    return '';
+                case 'modification_html':
+                    return change.after.outerHTML + '\n';
+                case 'ajout_css':
+                    return '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
+                case 'suppression_css':
+                    return '';
+                case 'ajout_js_function':
+                    return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                case 'suppression_js_function':
+                    return '';
+                case 'modification_js_function':
+                    return 'function ' + change.after.name + '(' + change.after.params.join(', ') + ') {\n' + change.after.body + '\n}\n\n';
+                case 'ajout_js_variable':
+                    return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                case 'suppression_js_variable':
+                    return '';
+                case 'modification_js_variable':
+                    return 'var ' + change.after.name + ' = ' + change.after.init + ';\n';
+                default:
+                    return '';
+            }
+        }
+        function getRejectedValue(change) {
+            switch (change.type) {
+                case 'ajout_html':
+                    return '';
+                case 'suppression_html':
+                    return change.component.outerHTML + '\n';
+                case 'modification_html':
+                    return change.before.outerHTML + '\n';
+                case 'ajout_css':
+                    return '';
+                case 'suppression_css':
+                    return '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
+                case 'ajout_js_function':
+                    return '';
+                case 'suppression_js_function':
+                    return 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                case 'modification_js_function':
+                    return 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
+                case 'ajout_js_variable':
+                    return '';
+                case 'suppression_js_variable':
+                    return 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                case 'modification_js_variable':
+                    return 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
+                default:
+                    return '';
+            }
+        }
+        function generateChangeDescription(change, changeNumber) {
+            var description = '<div class="change-number">Changement ' + changeNumber + '</div>';
+            description += '<div class="code-section">';
+            switch (change.type) {
+                case 'ajout_html':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Élément Ajouté :</div>' +
+                                   '<pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'suppression_html':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Élément Supprimé :</div>' +
+                                   '<pre><code>' + escapeHtml(change.component.outerHTML) + '</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'modification_html':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Avant :</div>' +
+                                   '<pre><code>' + escapeHtml(change.before.outerHTML) + '</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Après :</div>' +
+                                   '<pre><code>' + escapeHtml(change.after.outerHTML) + '</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'ajout_css':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Classe CSS Ajoutée :</div>' +
+                                   '<pre><code>.' + escapeHtml(change.className) + ' { /* Ajoutez vos styles ici */ }</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'suppression_css':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Classe CSS Supprimée :</div>' +
+                                   '<pre><code>.' + escapeHtml(change.className) + ' { /* Styles supprimés conservés */ }</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'ajout_js_function':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Ajoutée :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'suppression_js_function':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Supprimée :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.function.name) + '(' + change.function.params.join(', ') + ') {\n' + escapeHtml(change.function.body) + '\n}</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'modification_js_function':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Avant :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.before.name) + '(' + change.before.params.join(', ') + ') {\n' + escapeHtml(change.before.body) + '\n}</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Fonction JavaScript Après :</div>' +
+                                   '<pre><code>function ' + escapeHtml(change.after.name) + '(' + change.after.params.join(', ') + ') {\n' + escapeHtml(change.after.body) + '\n}</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'ajout_js_variable':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Ajoutée :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'suppression_js_variable':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Supprimée :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.variable.name) + ' = ' + escapeHtml(change.variable.init) + ';</code></pre>' +
+                                   '</div>';
+                    break;
+                case 'modification_js_variable':
+                    description += '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Avant :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.before.name) + ' = ' + escapeHtml(change.before.init) + ';</code></pre>' +
+                                   '</div>' +
+                                   '<div class="code-block">' +
+                                   '<div class="code-title">Variable JavaScript Après :</div>' +
+                                   '<pre><code>var ' + escapeHtml(change.after.name) + ' = ' + escapeHtml(change.after.init) + ';</code></pre>' +
+                                   '</div>';
+                    break;
+                default:
+                    break;
+            }
+            description += '</div>';
+            Swal.fire({
+                html: description,
+                width: '90%',
+                heightAuto: false,
+                showConfirmButton: false,
+                showCancelButton: false,
+                allowOutsideClick: false,
+                didOpen: function() {
+                    var acceptBtn = Swal.getPopup().querySelector('#acceptBtn');
+                    var rejectBtn = Swal.getPopup().querySelector('#rejectBtn');
+                    var customBtn = Swal.getPopup().querySelector('#customBtn');
+                    var prevBtn = Swal.getPopup().querySelector('#prevBtn');
+                    var nextBtn = Swal.getPopup().querySelector('#nextBtn');
+                    if (currentChangeIndex === 0) {
+                        prevBtn.disabled = true;
+                        prevBtn.style.backgroundColor = '#ccc';
+                        prevBtn.style.cursor = 'not-allowed';
                     }
-                } else if (change.type.indexOf('variable') !== -1) {
-                    if (change.type === 'modification_js_variable') {
-                        initialCode = '// Résolution de la modification de la variable ' + changeNumber + '\n' +
-                                     '// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n' +
-                                     '// Avant :\n' + 'var ' + change.before.name + ' = ' + change.before.init + ';\n\n' +
-                                     '// Après :\n' + 'var ' + change.after.name + ' = ' + change.after.init + ';';
-                    } else if (change.type === 'suppression_js_variable') {
-                        initialCode = '// Résolution de la suppression de la variable ' + changeNumber + '\n' +
-                                     '// Si vous souhaitez réintégrer la variable JavaScript supprimée, modifiez le ci-dessous.\n\n' +
-                                     '// Variable supprimée :\n' + 'var ' + change.variable.name + ' = ' + change.variable.init + ';';
-                    } else if (change.type === 'ajout_js_variable') {
-                        initialCode = '// Résolution de l\'ajout de la variable ' + changeNumber + '\n' +
-                                     '// Si vous souhaitez modifier l\'ajout, éditez la variable JavaScript ci-dessous.\n\n' +
-                                     '// Variable ajoutée :\n' + 'var ' + change.variable.name + ' = ' + change.variable.init + ';';
+                    if (currentChangeIndex === changes.length -1) {
+                        nextBtn.disabled = true;
+                        nextBtn.style.backgroundColor = '#ccc';
+                        nextBtn.style.cursor = 'not-allowed';
                     }
+                    acceptBtn.addEventListener('click', function() {
+                        userChoices[currentChangeIndex] = { action: 'accept', value: getAcceptedValue(change) };
+                        Swal.close();
+                        navigateNext();
+                    });
+                    rejectBtn.addEventListener('click', function() {
+                        userChoices[currentChangeIndex] = { action: 'reject', value: getRejectedValue(change) };
+                        Swal.close();
+                        navigateNext();
+                    });
+                    customBtn.addEventListener('click', function() {
+                        showCustomCodeEditor(change, changeNumber);
+                    });
+                    prevBtn.addEventListener('click', function() {
+                        Swal.close();
+                        showChange(currentChangeIndex - 1);
+                    });
+                    nextBtn.addEventListener('click', function() {
+                        Swal.close();
+                        showChange(currentChangeIndex + 1);
+                    });
+                }
+            });
+        }
+        function navigateNext() {
+            if (currentChangeIndex < changes.length - 1) {
+                showChange(currentChangeIndex + 1);
+            } else {
+                finalizeMerge();
+            }
+        }
+        function showCustomCodeEditor(change, changeNumber) {
+            var editorMode = determineEditorMode(change.type);
+            var initialCode = generateInitialCustomCode(change, changeNumber);
+            Swal.fire({
+                title: 'Code Personnalisé - Changement ' + changeNumber,
+                html: '<div id="aceEditor" style="width: 100%; height: 300px;"></div>',
+                showCancelButton: true,
+                confirmButtonText: 'Valider',
+                cancelButtonText: 'Annuler',
+                width: '90%',
+                heightAuto: false,
+                allowOutsideClick: false,
+                didOpen: function() {
+                    var editor = ace.edit("aceEditor");
+                    editor.setTheme("ace/theme/github");
+                    editor.session.setMode(editorMode);
+                    editor.setValue(initialCode, -1);
+                    editor.focus();
+                },
+                preConfirm: function() {
+                    var resolution = ace.edit("aceEditor").getValue();
+                    if (!resolution.trim()) {
+                        Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
+                    }
+                    return resolution;
+                }
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    userChoices[currentChangeIndex] = { action: 'custom', value: result.value };
+                    Swal.close();
+                    navigateNext();
+                } else {
+                    showChange(currentChangeIndex);
+                }
+            });
+        }
+        function determineEditorMode(changeType) {
+            if (changeType.indexOf('html') !== -1) {
+                return "ace/mode/html";
+            } else if (changeType.indexOf('css') !== -1) {
+                return "ace/mode/css";
+            } else if (changeType.indexOf('js') !== -1) {
+                return "ace/mode/javascript";
+            } else {
+                return "ace/mode/text";
+            }
+        }
+        function finalizeMerge() {
+            var mergedHTML = '';
+            var mergedCSS = '';
+            var mergedJS = '';
+            for (var i = 0; i < changes.length; i++) {
+                var change = changes[i];
+                var choice = userChoices[i];
+                if (!choice) continue;
+                switch (change.type) {
+                    case 'ajout_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value;
+                        }
+                        break;
+                    case 'suppression_html':
+                        if (choice.action === 'reject') {
+                            mergedHTML += change.component.outerHTML + '\n';
+                        }
+                        break;
+                    case 'modification_html':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedHTML += choice.value + '\n';
+                        } else if (choice.action === 'reject') {
+                            mergedHTML += change.before.outerHTML + '\n';
+                        }
+                        break;
+                    case 'ajout_css':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedCSS += '.' + change.className + ' { /* Ajoutez vos styles ici */ }\n';
+                        }
+                        break;
+                    case 'suppression_css':
+                        if (choice.action === 'reject') {
+                            mergedCSS += '.' + change.className + ' { /* Styles supprimés conservés */ }\n';
+                        }
+                        break;
+                    case 'ajout_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'suppression_js_function':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.function.name + '(' + change.function.params.join(', ') + ') {\n' + change.function.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'modification_js_function':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'function ' + choice.value.name + '(' + choice.value.params.join(', ') + ') {\n' + choice.value.body + '\n}\n\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'function ' + change.before.name + '(' + change.before.params.join(', ') + ') {\n' + change.before.body + '\n}\n\n';
+                        }
+                        break;
+                    case 'ajout_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        }
+                        break;
+                    case 'suppression_js_variable':
+                        if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.variable.name + ' = ' + change.variable.init + ';\n';
+                        }
+                        break;
+                    case 'modification_js_variable':
+                        if (choice.action === 'accept' || choice.action === 'custom') {
+                            mergedJS += 'var ' + choice.value.name + ' = ' + choice.value.init + ';\n';
+                        } else if (choice.action === 'reject') {
+                            mergedJS += 'var ' + change.before.name + ' = ' + change.before.init + ';\n';
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
-
-            return initialCode;
+            var finalHTML = mergedHTML.trim();
+            var finalCSS = mergedCSS.trim();
+            var finalJS = mergedJS.trim();
+            var mergedCode = '<!DOCTYPE html>\n' +
+                             '<html lang="fr">\n' +
+                             '<head>\n' +
+                             '    <meta charset="UTF-8">\n' +
+                             '    <title>Fusco - Code Fusionné</title>\n' +
+                             (finalCSS ? '<style>\n' + finalCSS + '\n</style>\n' : '') +
+                             '</head>\n' +
+                             '<body>\n' +
+                             finalHTML + '\n' +
+                             finalJS + '\n' +
+                             '</body>\n' +
+                             '</html>';
+            document.getElementById('mergedCode').value = mergedCodeFormat(mergedCode);
+            Swal.fire({
+                icon: 'success',
+                title: 'Fusion réussie!',
+                text: 'Les codes ont été fusionnés avec succès.',
+                confirmButtonColor: '#4A90E2'
+            });
+        }
+        function mergedCodeFormat(code) {
+            return code;
         }
     </script>
 </body>
