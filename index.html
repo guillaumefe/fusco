@@ -2,81 +2,701 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Fusco - Fusion Automatique avec Remplacement HTML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Builder</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; color: #333; padding: 20px; }
-        h1 { text-align: center; margin-bottom: 20px; color: #4A90E2; }
-        .container { display: flex; flex-direction: column; gap: 20px; }
-        .textareas { display: flex; flex-direction: column; gap: 20px; }
-        @media (min-width: 768px) { .textareas { flex-direction: row; }}
-        .textarea-container { flex: 1; display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; font-weight: bold; color: #333; }
-        textarea { width: 100%; height: 200px; padding: 10px; font-family: monospace; font-size: 14px; resize: vertical; border: 1px solid #ccc; border-radius: 5px; background-color: #fff; }
-        #editor { width: 100%; height: 400px; border: 1px solid #ccc; border-radius: 5px; background-color: #e9ecef; }
-        button { padding: 10px 20px; font-size: 16px; background-color: #4A90E2; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+        /* Styles de base */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { display: flex; height: 100vh; overflow: hidden; }
+        #builder, #preview { width: 50%; padding: 10px; overflow-y: auto; }
+        #builder { background-color: #f0f4ff; border-right: 2px solid #ccc; }
+        #preview { background-color: #fff; }
+        h2 { margin-bottom: 10px; font-size: 1.5rem; color: #333; }
+        
+        /* Boutons de création regroupés */
+        .button-group {
+            margin-bottom: 10px;
+        }
+        .button-group h3 {
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .button-group .btn-html {
+            background-color: #337ab7; /* Bleu pour HTML */
+        }
+        .button-group .btn-css {
+            background-color: #5cb85c; /* Vert pour CSS */
+        }
+        .button-group .btn-js {
+            background-color: #f0ad4e; /* Orange pour JS */
+        }
+        .button-group .btn-custom {
+            background-color: #5f9ea0; /* Couleur actuelle pour Custom */
+        }
+        .button-group button {
+            padding: 10px;
+            margin: 5px 5px 5px 0;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+        }
+        
+        /* Bouton Reset spécifique */
+        #reset-btn { 
+            background-color: #d9534f; /* Rouge pour indiquer une action destructive */
+            width: 100%; /* Occupe toute la largeur */
+            margin-top: 20px;
+            display: none; /* Caché par défaut */
+            transition: opacity 0.3s ease;
+            color: #fff;
+            border-radius: 5px;
+            padding:4px;
+            
+        }
+
+        #blocks { margin-top: 10px; }
+        .block { 
+            padding: 15px; 
+            margin: 10px 0; 
+            background-color: #add8e6; 
+            border-radius: 5px; 
+            cursor: move; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            font-size: 1.1rem; 
+            transition: opacity 0.3s, border 0.3s; 
+            position: relative; /* Pour le drop-indicator */
+        }
+        .highlight { border: 2px solid #f56a79; }
+        .custom-block { background-color: #ffcccb; }
+        .block-content { flex-grow: 1; text-align: left; }
+        .remove-btn, .edit-btn { 
+            padding: 5px; 
+            background-color: #f56a79; 
+            color: #fff; 
+            border: none; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            margin-left: 5px; 
+        }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { 
+            padding: 8px; 
+            text-align: left; 
+            border: 1px solid #ccc; 
+            cursor: pointer; 
+        }
+        th { background-color: #d3d3d3; }
+        #download-btn { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 1rem; 
+            background-color: #4CAF50; 
+            color: #fff; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 10px;
+        }
+        .preview-content { 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            display: inline-block; 
+            max-width: 100%; 
+        }
+
+        /* Popup Editor */
+        #editor-modal {
+            display: none; /* Masqué par défaut */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        #editor-container {
+            width: 80%;
+            height: 80%;
+            background: #fff;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #editor-title {
+            padding: 15px;
+            background-color: #5f9ea0;
+            color: #fff;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #ace-editor { 
+            flex-grow: 1; 
+            height: 100%; 
+            width: 100%; 
+            min-height: 0; /* Important pour Flexbox */
+        }
+        #editor-footer {
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+            background: #eee;
+        }
+        #editor-footer button { margin-left: 10px; }
+
+        /* Input Field for Name and Category */
+        #editor-container .input-group {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        #editor-container .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #editor-container .input-group input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            font-size: 1rem;
+        }
+        #editor-container .input-group .category-group {
+            margin-top: 10px;
+        }
+        #editor-container .input-group .category-group label {
+            font-weight: normal;
+            margin-right: 10px;
+        }
+
+        /* Drop Indicator */
+        .drop-indicator {
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            background-color: #f56a79;
+            z-index: 500;
+        }
+
+        /* Preview Section */
+        #generated-preview {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 400px;
+            width: 100%;
+            display: none; /* Caché par défaut */
+            transition: opacity 0.3s ease;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <!-- Charger Ace Editor -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 </head>
 <body>
-    <h1>Fusco - Fusion Automatique avec Remplacement HTML</h1>
-    <div class="container">
-        <div class="textareas">
-            <div class="textarea-container">
-                <label for="code1">Code 1 :</label>
-                <textarea id="code1" placeholder="Collez votre code HTML ici..."></textarea>
+    <div id="builder">
+        <h2>Construire votre page</h2>
+
+        <!-- Group HTML Buttons -->
+        <div class="button-group">
+            <h3>HTML</h3>
+            <button class="btn-html" onclick="addBlock('DOCTYPE')">Add DOCTYPE</button>
+            <button class="btn-html" onclick="addBlock('Title')">Add Title</button>
+            <button class="btn-html" onclick="addBlock('Meta')">Add Meta</button>
+            <button class="btn-html" onclick="addBlock('Div')">Add Div</button>
+            <button class="btn-html" onclick="addBlock('Paragraph')">Add Paragraph</button>
+            <button class="btn-html" onclick="addBlock('Link')">Add Link</button>
+            <button class="btn-html" onclick="addBlock('Image')">Add Image</button>
+            <button class="btn-html" onclick="addBlock('Button')">Add Button</button>
+        </div>
+
+        <!-- Group CSS Buttons -->
+        <div class="button-group">
+            <h3>CSS</h3>
+            <button class="btn-css" onclick="addBlock('CSS')">Add CSS</button>
+            <button class="btn-css" onclick="addBlock('Animation')">Add CSS Animation</button>
+            <button class="btn-css" onclick="addBlock('Transition')">Add CSS Transition</button>
+        </div>
+
+        <!-- Group JS Buttons -->
+        <div class="button-group">
+            <h3>JavaScript</h3>
+            <button class="btn-js" onclick="addBlock('JS')">Add JS</button>
+            <button class="btn-js" onclick="addBlock('Constant')">Add JS Constant</button>
+            <button class="btn-js" onclick="addBlock('Variable')">Add JS Variable</button>
+            <button class="btn-js" onclick="addBlock('Function')">Add JS Function</button>
+            <button class="btn-js" onclick="addBlock('Event')">Add JS Event</button>
+        </div>
+
+        <!-- Custom Block Button -->
+        <div class="button-group">
+            <h3>Custom</h3>
+            <button class="btn-custom" onclick="addBlock('Custom')">Add Custom Block</button>
+        </div>
+
+        <div id="blocks"></div>
+
+        <!-- Bouton Reset ajouté ici -->
+        <button id="reset-btn" onclick="resetBlocks()">Reset</button>
+    </div>
+    <div id="preview">
+        <h2>Structure Générée</h2>
+        <table id="htmlTable">
+            <thead><tr><th>HTML Blocks</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <table id="cssTable">
+            <thead><tr><th>CSS Styles</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <table id="jsTable">
+            <thead><tr><th>JS Components</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <button id="download-btn" onclick="downloadPage()">Télécharger index.html</button>
+        <iframe id="generated-preview" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+
+    <!-- Popup Modal for Editing -->
+    <div id="editor-modal">
+        <div id="editor-container">
+            <div id="editor-title">
+                <span id="editor-title-text">Edit Component</span>
+                <button onclick="closeEditor()">X</button>
             </div>
-            <div class="textarea-container">
-                <label for="code2">Code 2 :</label>
-                <textarea id="code2" placeholder="Collez le bout de code à insérer ici..."></textarea>
+            <div class="input-group">
+                <label for="block-name">Name (optional):</label>
+                <input type="text" id="block-name" placeholder="Enter component name">
+            </div>
+            <div class="input-group" id="category-group" style="display: none;">
+                <label>Category (optional):</label>
+                <div class="category-group">
+                    <input type="radio" id="category-html" name="category" value="HTML">
+                    <label for="category-html">HTML</label>
+                    <input type="radio" id="category-css" name="category" value="CSS">
+                    <label for="category-css">CSS</label>
+                    <input type="radio" id="category-js" name="category" value="JS">
+                    <label for="category-js">JS</label>
+                </div>
+            </div>
+            <div id="ace-editor"></div>
+            <div id="editor-footer">
+                <button onclick="closeEditor()">Cancel</button>
+                <button onclick="saveContent()">Save</button>
             </div>
         </div>
-        <button id="mergeButton">Fusionner le Code</button>
-        <h2>Code Fusionné :</h2>
-        <div id="editor"></div>
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const code1 = document.getElementById('code1');
-            const code2 = document.getElementById('code2');
-            const editor = ace.edit("editor");
-            const mergeButton = document.getElementById('mergeButton');
+        const blocksKey = 'pageBuilderBlocks'; // Clé pour localStorage
+        let blocks = [];
+        let currentEditingIndex = null;
+        let draggedIndex = null;
 
-            editor.setTheme("ace/theme/github");
-            editor.session.setMode("ace/mode/html");
-            editor.setOptions({
-                fontSize: "14px",
-                showPrintMargin: false,
-                wrap: true
-            });
-
-            function mergeHTMLCode() {
-                const parser = new DOMParser();
-
-                // Parse code1 and code2 into DOM elements
-                const doc1 = parser.parseFromString(code1.value, "text/html");
-                const doc2 = parser.parseFromString(code2.value, "text/html");
-
-                // Replace the <title> element in doc1 with the one from doc2, if it exists
-                const title2 = doc2.querySelector("title");
-                if (title2) {
-                    let title1 = doc1.querySelector("title");
-                    if (title1) {
-                        title1.textContent = title2.textContent;  // Remplace le titre
-                    } else {
-                        const header = doc1.querySelector("header") || doc1.createElement("header");
-                        header.appendChild(title2.cloneNode(true));
-                        doc1.head.appendChild(header);
-                    }
-                }
-
-                // Convert the merged DOM back to a string and display in Ace editor
-                const mergedHTML = doc1.documentElement.outerHTML;
-                editor.setValue(mergedHTML, -1);
-            }
-
-            mergeButton.addEventListener('click', mergeHTMLCode);
+        // Initialisation de l'éditeur Ace
+        const editor = ace.edit("ace-editor");
+        editor.setTheme("ace/theme/github"); // Changement du thème à GitHub
+        editor.session.setMode("ace/mode/javascript");
+        editor.setOptions({
+            fontSize: "14px",
+            showPrintMargin: false
         });
+
+        // Fonction pour échapper les caractères spéciaux en HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Charger les blocs depuis localStorage au chargement de la page
+        window.onload = function() {
+            const savedBlocks = localStorage.getItem(blocksKey);
+            if (savedBlocks) {
+                try {
+                    blocks = JSON.parse(savedBlocks);
+                } catch (e) {
+                    console.error("Erreur lors de la récupération des blocs depuis localStorage:", e);
+                    blocks = [];
+                }
+            }
+            renderBlocks();
+            updateTables();
+            updatePreview(); // Mettre à jour l'aperçu au chargement
+            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+        };
+
+        // Sauvegarder les blocs dans localStorage
+        function saveBlocks() {
+            localStorage.setItem(blocksKey, JSON.stringify(blocks));
+        }
+
+        // Ajouter un nouveau bloc
+        function addBlock(type) {
+            const block = {
+                type,
+                title: '', // Nom du bloc (facultatif)
+                content: getDefaultContent(type),
+                isCustom: type === 'Custom',
+                category: type === 'Custom' ? null : null // Catégorie par défaut pour les Custom Blocks est null
+            };
+            blocks.push(block);
+            renderBlocks();
+            updateTables();
+            saveBlocks();
+            updatePreview(); // Mettre à jour l'aperçu après l'ajout
+            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+        }
+
+        // Obtenir le contenu par défaut en fonction du type
+        function getDefaultContent(type) {
+            const defaults = {
+                'DOCTYPE': '<!DOCTYPE html>',
+                'Title': '<title>My Page</title>',
+                'Meta': '<meta charset="UTF-8">',
+                'CSS': 'body { background-color: lightblue; }',
+                'JS': 'console.log("Hello World");',
+                'Div': '<div>Content here</div>',
+                'Paragraph': '<p>This is a paragraph.</p>',
+                'Link': '<a href="https://example.com">Example Link</a>',
+                'Image': '<img src="https://example.com/image.jpg" alt="Example Image">',
+                'Button': '<button>Click me</button>',
+                'Constant': 'const myConstant = "Hello";',
+                'Variable': 'let myVariable = 10;',
+                'Function': 'function myFunction() { return true; }',
+                'Event': 'document.body.onclick = () => alert("Clicked!");',
+                'Animation': '@keyframes myAnimation { from { opacity: 0; } to { opacity: 1; } }',
+                'Transition': 'transition: all 0.5s ease;',
+                'Custom': '' // Contenu vide par défaut pour les Custom Blocks
+            };
+            return defaults[type] || '';
+        }
+
+        // Rendre les blocs dans le builder
+        function renderBlocks() {
+            const blocksDiv = document.getElementById('blocks');
+            blocksDiv.innerHTML = '';
+            blocks.forEach((block, index) => {
+                const div = document.createElement('div');
+                div.className = 'block' + (block.isCustom ? ' custom-block' : '');
+                div.id = `block-${index}`; // Assignation d'un ID unique
+                div.draggable = true;
+                div.ondragstart = (e) => dragStart(e, index, div);
+                div.ondragenter = (e) => dragEnter(e, index);
+                div.ondragover = (e) => e.preventDefault();
+                div.ondragleave = dragLeave;
+                div.ondrop = (e) => drop(e, index, div);
+                div.innerHTML = `
+                    <div class="block-content">${escapeHtml(block.title || block.type)}</div>
+                    <button class="edit-btn" onclick="openEditor(${index})">Edit</button>
+                    <button class="remove-btn" onclick="removeBlock(${index})">X</button>
+                `;
+                blocksDiv.appendChild(div);
+            });
+        }
+
+        // Mettre à jour les tableaux de prévisualisation
+        function updateTables() {
+            const htmlBlocks = [];
+            const cssBlocks = [];
+            const jsBlocks = [];
+            blocks.forEach((block, index) => {
+                let displayTitle = block.title || block.type;
+                if (block.isCustom) {
+                    // Pour les Custom Blocks, inclure la catégorie si définie
+                    displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
+                }
+                if (['DOCTYPE', 'Title', 'Meta', 'Div', 'Paragraph', 'Link', 'Image', 'Button', 'HTML'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
+                    htmlBlocks.push({ title: displayTitle, index });
+                }
+                if (['CSS', 'Animation', 'Transition'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
+                    cssBlocks.push({ title: displayTitle, index });
+                }
+                if (['JS', 'Constant', 'Variable', 'Function', 'Event'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
+                    jsBlocks.push({ title: displayTitle, index });
+                }
+            });
+            populateTable('htmlTable', htmlBlocks);
+            populateTable('cssTable', cssBlocks);
+            populateTable('jsTable', jsBlocks);
+        }
+
+        // Remplir un tableau avec des données
+        function populateTable(tableId, data) {
+            const tbody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.className = 'preview-content';
+                cell.textContent = item.title;
+                cell.onclick = () => {
+                    highlightBlock(item.index); // Mettre en surbrillance le bloc à gauche
+                };
+                row.appendChild(cell);
+                tbody.appendChild(row);
+            });
+        }
+
+        // Mettre à jour l'aperçu de index.html
+        function updatePreview() {
+            const generatedHTML = generateHTML();
+            const iframe = document.getElementById('generated-preview');
+            if (blocks.length > 0) {
+                iframe.srcdoc = generatedHTML;
+                iframe.style.display = 'block';
+            } else {
+                iframe.srcdoc = '';
+                iframe.style.display = 'none';
+            }
+        }
+
+        // Générer le contenu HTML
+        function generateHTML() {
+            let html = '';
+            // Parcourir les blocs pour HTML, CSS, JS
+            blocks.forEach(block => {
+                if (block.type === 'DOCTYPE') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'Title') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'Meta') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'CSS' || (block.isCustom && block.category === 'CSS')) {
+                    html += `<style>\n${block.content}\n<\/style>\n`;
+                } else if (block.type === 'JS' || (block.isCustom && block.category === 'JS')) {
+                    html += `<script>\n${block.content}\n<\/script>\n`;
+                }
+            });
+            html += '<body>\n';
+            // Parcourir les blocs pour le contenu du body
+            blocks.forEach(block => {
+                if (block.type === 'Div' || block.type === 'Paragraph' || block.type === 'Link' || block.type === 'Image' || block.type === 'Button' || block.type === 'HTML' || (block.isCustom && block.category === 'HTML')) {
+                    html += `${block.content}\n`;
+                }
+            });
+            html += '</body>\n';
+            return html;
+        }
+
+        // Mettre en surbrillance un bloc spécifique
+        function highlightBlock(index) {
+            const blocksDiv = document.getElementById('blocks');
+            // Retirer la classe highlight de tous les blocs
+            Array.from(blocksDiv.children).forEach(child => {
+                child.classList.remove('highlight');
+            });
+            // Ajouter la classe highlight au bloc sélectionné
+            const selectedBlock = document.getElementById(`block-${index}`);
+            if (selectedBlock) {
+                selectedBlock.classList.add('highlight');
+                selectedBlock.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        }
+
+        // Ouvrir le popup d'édition pour un bloc spécifique
+        function openEditor(index) {
+            currentEditingIndex = index;
+            const block = blocks[index];
+            document.getElementById('editor-title-text').textContent = `Edit ${block.type} Component`;
+            document.getElementById('block-name').value = block.title;
+            editor.session.setValue(block.content);
+            
+            // Afficher ou masquer le groupe de catégories en fonction du type du bloc
+            const categoryGroup = document.getElementById('category-group');
+            if (block.isCustom) {
+                categoryGroup.style.display = 'block';
+                // Cocher la catégorie actuelle si définie, sinon laisser aucune sélection
+                if (block.category) {
+                    document.querySelector(`input[name="category"][value="${block.category}"]`).checked = true;
+                } else {
+                    // Aucun bouton radio sélectionné par défaut si catégorie est null
+                    document.querySelectorAll('input[name="category"]').forEach(radio => radio.checked = false);
+                }
+            } else {
+                categoryGroup.style.display = 'none';
+            }
+            
+            document.getElementById('editor-modal').style.display = 'flex';
+            
+            // Utiliser requestAnimationFrame pour s'assurer que le DOM est rendu
+            requestAnimationFrame(() => {
+                editor.resize(); // Ajuster la taille de l'éditeur Ace après l'affichage
+            });
+        }
+
+        // Fermer le popup d'édition
+        function closeEditor() {
+            document.getElementById('editor-modal').style.display = 'none';
+        }
+
+        // Sauvegarder le contenu édité dans le bloc
+        function saveContent() {
+            if (currentEditingIndex !== null) {
+                const newTitle = document.getElementById('block-name').value.trim();
+                // Si le nom est vide, utiliser le type comme nom par défaut
+                const finalTitle = newTitle !== '' ? newTitle : blocks[currentEditingIndex].type;
+                blocks[currentEditingIndex].title = finalTitle;
+                blocks[currentEditingIndex].content = editor.session.getValue();
+                if (blocks[currentEditingIndex].isCustom) {
+                    const selectedCategory = document.querySelector('input[name="category"]:checked');
+                    blocks[currentEditingIndex].category = selectedCategory ? selectedCategory.value : null;
+                }
+                renderBlocks();
+                updateTables();
+                saveBlocks();
+                updatePreview(); // Mettre à jour l'aperçu après la sauvegarde
+                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+                closeEditor();
+            }
+        }
+
+        // Fonction appelée au démarrage du drag
+        function dragStart(e, index, element) {
+            draggedIndex = index;
+            element.style.opacity = 0.5; // Rendre l'élément quasi transparent
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        // Fonction appelée lors de l'entrée dans un autre bloc pendant le drag
+        function dragEnter(e, index) {
+            const blocksDiv = document.getElementById('blocks');
+            let indicator = document.querySelector('.drop-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.classList.add('drop-indicator');
+                blocksDiv.appendChild(indicator);
+            }
+            const targetBlock = blocksDiv.children[index];
+            const topRelative = targetBlock.offsetTop;
+            if (index > draggedIndex) {
+                indicator.style.top = `${topRelative + targetBlock.offsetHeight}px`;
+            } else {
+                indicator.style.top = `${topRelative}px`;
+            }
+            indicator.style.left = '0';
+            indicator.style.width = '100%';
+            indicator.style.display = 'block';
+        }
+
+        // Fonction appelée lorsque le drag quitte un bloc
+        function dragLeave(e) {
+            const indicator = document.querySelector('.drop-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+
+        // Fonction appelée lors du drop d'un bloc
+        function drop(e, dropIndex, element) {
+            e.preventDefault();
+            const indicator = document.querySelector('.drop-indicator');
+            if (indicator) indicator.style.display = 'none';
+            if (draggedIndex === null) return;
+            const draggedBlock = blocks.splice(draggedIndex, 1)[0];
+            blocks.splice(dropIndex, 0, draggedBlock);
+            renderBlocks();
+            updateTables();
+            saveBlocks();
+            updatePreview(); // Mettre à jour l'aperçu après le drop
+            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+        }
+
+        // Supprimer un bloc
+        function removeBlock(index) {
+            if (confirm("Voulez-vous vraiment supprimer ce bloc ?")) {
+                blocks.splice(index, 1);
+                renderBlocks();
+                updateTables();
+                saveBlocks();
+                updatePreview(); // Mettre à jour l'aperçu après la suppression
+                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+            }
+        }
+
+        // Télécharger la page HTML générée
+        function downloadPage() {
+            let html = '';
+            // Parcourir les blocs pour HTML, CSS, JS
+            blocks.forEach(block => {
+                if (block.type === 'DOCTYPE') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'Title') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'Meta') {
+                    html += `${block.content}\n`;
+                } else if (block.type === 'CSS' || (block.isCustom && block.category === 'CSS')) {
+                    html += `<style>\n${block.content}\n<\/style>\n`;
+                } else if (block.type === 'JS' || (block.isCustom && block.category === 'JS')) {
+                    html += `<script>\n${block.content}\n<\/script>\n`;
+                }
+            });
+            html += '<body>\n';
+            // Parcourir les blocs pour le contenu du body
+            blocks.forEach(block => {
+                if (block.type === 'Div' || block.type === 'Paragraph' || block.type === 'Link' || block.type === 'Image' || block.type === 'Button' || block.type === 'HTML' || (block.isCustom && block.category === 'HTML')) {
+                    html += `${block.content}\n`;
+                }
+            });
+            html += '</body>\n';
+
+            const blob = new Blob([html], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'index.html';
+            link.click();
+
+            updatePreview(); // Mettre à jour l'aperçu après le téléchargement
+        }
+
+        // Fonction pour réinitialiser tous les blocs
+        function resetBlocks() {
+            if (confirm("Êtes-vous sûr de vouloir réinitialiser tous les composants ? Cette action est irréversible.")) {
+                blocks = [];
+                renderBlocks();
+                updateTables();
+                saveBlocks();
+                updatePreview(); // Mettre à jour l'aperçu après la réinitialisation
+                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
+                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+            }
+        }
+
+        // Fonction pour basculer la visibilité du bouton Reset
+        function toggleResetButton() {
+            const resetBtn = document.getElementById('reset-btn');
+            if (blocks.length > 1) {
+                resetBtn.style.display = 'block';
+            } else {
+                resetBtn.style.display = 'none';
+            }
+        }
+
+        // Fonction pour basculer la visibilité de l'aperçu
+        function togglePreview() {
+            const iframe = document.getElementById('generated-preview');
+            if (blocks.length > 0) {
+                iframe.style.display = 'block';
+            } else {
+                iframe.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
