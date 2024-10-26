@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fusionneur de Code Avancé</title>
+    <!-- Inclusion de la bibliothèque jsdiff via UNPKG -->
+    <script src="https://cdn.jsdelivr.net/npm/diff@7.0.0/dist/diff.min.js"></script>
+    <!-- Inclusion de SweetAlert2 via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Inclusion d'Ace Editor via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .textarea-container {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #mergedCode {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            background-color: #e9ecef;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        code {
+            font-family: monospace;
+            font-size: 14px;
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .button-group button {
+            width: 30%;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>conflict</h1>
+    <div class="container">
+        <div class="textarea-container">
+            <label for="code1"><strong>Code 1 :</strong></label>
+            <textarea id="code1" placeholder="Collez votre premier code ici..."></textarea>
+        </div>
+        <div class="textarea-container">
+            <label for="code2"><strong>Code 2 :</strong></label>
+            <textarea id="code2" placeholder="Collez votre second code ici..."></textarea>
+        </div>
+    </div>
+    <button id="mergeBtn">Fusionner</button>
+    <h2>Code Fusionné :</h2>
+    <textarea id="mergedCode" readonly></textarea>
+
+    <script>
+        document.getElementById('mergeBtn').addEventListener('click', async function() {
+            const code1 = document.getElementById('code1').value;
+            const code2 = document.getElementById('code2').value;
+
+            // Utilisation de jsdiff pour comparer les codes
+            const diffs = Diff.diffLines(code1, code2);
+            const conflicts = identifyConflicts(diffs);
+
+            if (conflicts.length > 0) {
+                // Gérer les conflits un par un
+                let resolvedCode = code1;
+                for (let index = 0; index < conflicts.length; index++) {
+                    const conflict = conflicts[index];
+                    const resolution = await handleConflict(conflict, index + 1);
+                    if (resolution === null) {
+                        // L'utilisateur a annulé la fusion
+                        Swal.fire('Annulé', 'La fusion a été annulée.', 'error');
+                        return;
+                    }
+                    // Intégrer la résolution de l'utilisateur
+                    resolvedCode = applyResolution(resolvedCode, conflict, resolution);
+                }
+
+                // Afficher le code fusionné résolu
+                document.getElementById('mergedCode').value = resolvedCode;
+                Swal.fire('Fusion réussie!', 'Les codes ont été fusionnés avec les résolutions fournies.', 'success');
+            } else {
+                // Pas de conflit, afficher le code fusionné
+                const merged = mergeWithoutConflict(code1, code2);
+                document.getElementById('mergedCode').value = merged;
+                Swal.fire('Fusion réussie!', 'Les codes ont été fusionnés sans conflits.', 'success');
+            }
+        });
+
+        // Fonction pour identifier les conflits
+        function identifyConflicts(diffs) {
+            const conflicts = [];
+            let i = 0;
+            while (i < diffs.length) {
+                const current = diffs[i];
+                if (current.added || current.removed) {
+                    // Rechercher des changements qui se chevauchent
+                    let conflict = { added: [], removed: [] };
+                    while (i < diffs.length && (diffs[i].added || diffs[i].removed)) {
+                        if (diffs[i].added) {
+                            conflict.added.push(diffs[i].value);
+                        }
+                        if (diffs[i].removed) {
+                            conflict.removed.push(diffs[i].value);
+                        }
+                        i++;
+                    }
+                    conflicts.push(conflict);
+                } else {
+                    i++;
+                }
+            }
+            return conflicts;
+        }
+
+        // Fonction pour gérer un conflit individuel
+        async function handleConflict(conflict, conflictNumber) {
+            // Générer la description du conflit
+            const conflictDescription = generateConflictDescription(conflict, conflictNumber);
+
+            // Afficher le popup initial avec les options
+            await Swal.fire({
+                title: `Conflit ${conflictNumber}`,
+                html: conflictDescription + `
+                    <div class="button-group">
+                        <button id="useCode1" class="swal2-styled">Utiliser Code1</button>
+                        <button id="useCode2" class="swal2-styled">Utiliser Code2</button>
+                        <button id="useCustom" class="swal2-styled">Code Personnalisé</button>
+                    </div>
+                `,
+                showConfirmButton: false,
+                showCancelButton: false,
+                didOpen: () => {
+                    const useCode1Btn = Swal.getPopup().querySelector('#useCode1');
+                    const useCode2Btn = Swal.getPopup().querySelector('#useCode2');
+                    const useCustomBtn = Swal.getPopup().querySelector('#useCustom');
+
+                    useCode1Btn.addEventListener('click', () => {
+                        Swal.close();
+                        Swal.fire({
+                            title: `Conflit ${conflictNumber} Résolu`,
+                            text: 'Vous avez choisi d\'utiliser Code1.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        Swal.fire(''); // To ensure the next step waits
+                        Swal.fire.currentChoice = 'code1';
+                    });
+
+                    useCode2Btn.addEventListener('click', () => {
+                        Swal.close();
+                        Swal.fire({
+                            title: `Conflit ${conflictNumber} Résolu`,
+                            text: 'Vous avez choisi d\'utiliser Code2.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                        Swal.fire.currentChoice = 'code2';
+                    });
+
+                    useCustomBtn.addEventListener('click', () => {
+                        Swal.close();
+                        Swal.fire.currentChoice = 'custom';
+                    });
+                }
+            });
+
+            const choice = Swal.fire.currentChoice;
+
+            if (choice === 'code1') {
+                return 'code1';
+            } else if (choice === 'code2') {
+                return 'code2';
+            } else if (choice === 'custom') {
+                // Afficher Ace Editor pour entrer du code personnalisé
+                const { value: customCode, isConfirmed } = await Swal.fire({
+                    title: `Conflit ${conflictNumber} - Code Personnalisé`,
+                    html: `<div id="aceEditor" style="width: 100%; height: 300px;"></div>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Valider',
+                    cancelButtonText: 'Annuler',
+                    width: '80%',
+                    heightAuto: false,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        const editor = ace.edit("aceEditor");
+                        editor.setTheme("ace/theme/github");
+                        editor.session.setMode("ace/mode/javascript"); // Vous pouvez changer le mode selon le langage
+                        editor.setValue(generateInitialCustomCode(conflict, conflictNumber), -1); // -1 pour ne pas déplacer le curseur
+                        window.currentEditor = editor;
+                    },
+                    preConfirm: () => {
+                        const resolution = window.currentEditor.getValue();
+                        if (!resolution.trim()) {
+                            Swal.showValidationMessage('Veuillez fournir une résolution pour le conflit.');
+                        }
+                        return resolution;
+                    }
+                });
+
+                if (isConfirmed) {
+                    return customCode;
+                } else {
+                    // L'utilisateur a annulé la résolution
+                    return null;
+                }
+            }
+
+            return null;
+        }
+
+        // Fonction pour générer la description du conflit
+        function generateConflictDescription(conflict, conflictNumber) {
+            let description = `<h3>Conflit ${conflictNumber}</h3>`;
+            if (conflict.removed.length > 0 && conflict.added.length > 0) {
+                description += `<p><strong>Suppression :</strong></p><pre><code>${escapeHtml(conflict.removed.join(''))}</code></pre>`;
+                description += `<p><strong>Ajout :</strong></p><pre><code>${escapeHtml(conflict.added.join(''))}</code></pre>`;
+                description += `<p>Un bloc de code a été modifié. Choisissez quelle version conserver ou fournissez une nouvelle version.</p>`;
+            } else if (conflict.removed.length > 0) {
+                description += `<p><strong>Suppression :</strong></p><pre><code>${escapeHtml(conflict.removed.join(''))}</code></pre>`;
+                description += `<p>Un bloc de code a été supprimé. Choisissez si vous souhaitez conserver cette suppression ou réintégrer le code.</p>`;
+            } else if (conflict.added.length > 0) {
+                description += `<p><strong>Ajout :</strong></p><pre><code>${escapeHtml(conflict.added.join(''))}</code></pre>`;
+                description += `<p>Un nouveau bloc de code a été ajouté. Choisissez si vous souhaitez conserver cet ajout ou le modifier.</p>`;
+            }
+            return description;
+        }
+
+        // Fonction pour générer le contenu initial de la résolution personnalisée dans Ace Editor
+        function generateInitialCustomCode(conflict, conflictNumber) {
+            if (conflict.added.length > 0 && conflict.removed.length > 0) {
+                return `// Résolution du conflit ${conflictNumber}\n// Combinez ou modifiez les versions ci-dessous selon vos besoins.\n\n` +
+                       `// Code supprimé :\n${conflict.removed.join('')}\n\n` +
+                       `// Code ajouté :\n${conflict.added.join('')}`;
+            } else if (conflict.removed.length > 0) {
+                return `// Résolution du conflit ${conflictNumber} - Suppression\n// Si vous souhaitez réintégrer le code supprimé, modifiez le ci-dessous.\n\n` +
+                       `// Code supprimé :\n${conflict.removed.join('')}`;
+            } else if (conflict.added.length > 0) {
+                return `// Résolution du conflit ${conflictNumber} - Ajout\n// Si vous souhaitez modifier l'ajout, éditez le code ci-dessous.\n\n` +
+                       `// Code ajouté :\n${conflict.added.join('')}`;
+            }
+            return '';
+        }
+
+        // Fonction pour appliquer la résolution de l'utilisateur
+        function applyResolution(resolvedCode, conflict, resolution) {
+            // Pour simplifier, nous allons remplacer la première occurrence de la suppression ou de l'ajout par la résolution
+            if (conflict.removed.length > 0 && conflict.added.length > 0) {
+                // Modification
+                const removed = conflict.removed.join('');
+                resolvedCode = resolvedCode.replace(removed, resolution);
+            } else if (conflict.removed.length > 0) {
+                // Suppression
+                const removed = conflict.removed.join('');
+                resolvedCode = resolvedCode.replace(removed, resolution);
+            } else if (conflict.added.length > 0) {
+                // Ajout
+                const added = conflict.added.join('');
+                resolvedCode = resolvedCode.replace(added, resolution);
+            }
+            return resolvedCode;
+        }
+
+        // Fonction pour fusionner les codes sans conflit
+        function mergeWithoutConflict(code1, code2) {
+            // Simple concaténation pour l'exemple
+            return code1 + '\n' + code2;
+        }
+
+        // Fonction pour échapper les caractères HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
