@@ -10,45 +10,95 @@
     <!-- Inclusion d'Ace Editor via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.14/ace.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f4;
+        /* Reset des marges et paddings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        /* Style global */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            padding: 20px;
+        }
+
         h1 {
             text-align: center;
+            margin-bottom: 20px;
+            color: #4A90E2;
         }
+
+        /* Container principal */
         .container {
             display: flex;
+            flex-direction: column;
             gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
         }
+
+        /* Textareas container */
+        .textareas {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .textareas {
+                flex-direction: row;
+            }
+        }
+
         .textarea-container {
             flex: 1;
-            min-width: 300px;
             display: flex;
             flex-direction: column;
         }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
         textarea {
             width: 100%;
-            height: 300px;
+            height: 200px;
             padding: 10px;
             font-family: monospace;
             font-size: 14px;
             resize: vertical;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            transition: border-color 0.3s;
         }
-        button {
-            padding: 10px 20px;
+
+        textarea:focus {
+            border-color: #4A90E2;
+            outline: none;
+        }
+
+        /* Bouton de fusion */
+        #mergeBtn {
+            padding: 15px 30px;
             font-size: 16px;
             cursor: pointer;
-            margin: 0 auto;
-            display: block;
-            background-color: #28a745;
+            background-color: #4A90E2;
             color: white;
             border: none;
             border-radius: 5px;
+            align-self: center;
+            transition: background-color 0.3s;
         }
+
+        #mergeBtn:hover {
+            background-color: #357ABD;
+        }
+
+        /* Merged Code */
         #mergedCode {
             width: 100%;
             height: 300px;
@@ -56,50 +106,72 @@
             font-family: monospace;
             font-size: 14px;
             resize: vertical;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             background-color: #e9ecef;
         }
-        pre {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            width: 100%;
-            box-sizing: border-box;
+
+        /* Boutons dans les popups */
+        .swal2-styled {
+            background-color: #4A90E2 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 5px !important;
+            padding: 10px 20px !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            margin: 5px !important;
+            transition: background-color 0.3s !important;
         }
-        code {
-            font-family: monospace;
-            font-size: 14px;
-            display: block;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+
+        .swal2-styled:hover {
+            background-color: #357ABD !important;
         }
-        .button-group {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
+
+        /* Boutons spécifiques */
+        .accept-btn {
+            background-color: #28a745 !important;
         }
-        .button-group button {
-            width: 30%;
-            padding: 10px;
-            font-size: 14px;
+
+        .accept-btn:hover {
+            background-color: #218838 !important;
+        }
+
+        .reject-btn {
+            background-color: #dc3545 !important;
+        }
+
+        .reject-btn:hover {
+            background-color: #c82333 !important;
+        }
+
+        .custom-btn {
+            background-color: #FFC107 !important;
+            color: #212529 !important;
+        }
+
+        .custom-btn:hover {
+            background-color: #e0a800 !important;
         }
     </style>
 </head>
 <body>
-    <h1>Fusionneur de Code Avancé</h1>
+    <h1>Fusco</h1>
     <div class="container">
-        <div class="textarea-container">
-            <label for="code1"><strong>Code 1 :</strong></label>
-            <textarea id="code1" placeholder="Collez votre premier code ici..."></textarea>
+        <div class="textareas">
+            <div class="textarea-container">
+                <label for="code1">Code 1 :</label>
+                <textarea id="code1" placeholder="Collez votre premier code ici..."></textarea>
+            </div>
+            <div class="textarea-container">
+                <label for="code2">Code 2 :</label>
+                <textarea id="code2" placeholder="Collez votre second code ici..."></textarea>
+            </div>
         </div>
-        <div class="textarea-container">
-            <label for="code2"><strong>Code 2 :</strong></label>
-            <textarea id="code2" placeholder="Collez votre second code ici..."></textarea>
-        </div>
+        <button id="mergeBtn">Fusionner</button>
+        <h2>Code Fusionné :</h2>
+        <textarea id="mergedCode" readonly></textarea>
     </div>
-    <button id="mergeBtn">Fusionner</button>
-    <h2>Code Fusionné :</h2>
-    <textarea id="mergedCode" readonly></textarea>
 
     <script>
         document.getElementById('mergeBtn').addEventListener('click', async function() {
@@ -119,7 +191,12 @@
                     const userChoice = await handleChange(change, i + 1);
                     if (userChoice === null) {
                         // L'utilisateur a annulé la fusion
-                        Swal.fire('Annulé', 'La fusion a été annulée.', 'error');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Fusion annulée',
+                            text: 'La fusion a été annulée par l\'utilisateur.',
+                            confirmButtonColor: '#4A90E2'
+                        });
                         return;
                     }
                     mergedCode += userChoice;
@@ -128,7 +205,12 @@
 
             // Afficher le code fusionné résolu
             document.getElementById('mergedCode').value = mergedCode;
-            Swal.fire('Fusion réussie!', 'Les codes ont été fusionnés avec succès.', 'success');
+            Swal.fire({
+                icon: 'success',
+                title: 'Fusion réussie!',
+                text: 'Les codes ont été fusionnés avec succès.',
+                confirmButtonColor: '#4A90E2'
+            });
         });
 
         // Fonction pour traiter les diffs et identifier les changements
@@ -180,9 +262,9 @@
                 title: `Changement ${changeNumber} - ${capitalizeFirstLetter(change.type)}`,
                 html: description + `
                     <div class="button-group">
-                        <button id="acceptBtn" class="swal2-styled">Oui</button>
-                        <button id="rejectBtn" class="swal2-styled">Non</button>
-                        <button id="customBtn" class="swal2-styled">Code Personnalisé</button>
+                        <button id="acceptBtn" class="swal2-styled accept-btn">Oui</button>
+                        <button id="rejectBtn" class="swal2-styled reject-btn">Non</button>
+                        <button id="customBtn" class="swal2-styled custom-btn">Code Personnalisé</button>
                     </div>
                 `,
                 showConfirmButton: false,
@@ -198,7 +280,7 @@
                             title: `Changement ${changeNumber} Accepté`,
                             text: 'Vous avez accepté ce changement.',
                             icon: 'success',
-                            timer: 1500,
+                            timer: 1000,
                             showConfirmButton: false
                         });
                         Swal.choice = 'accept';
@@ -210,7 +292,7 @@
                             title: `Changement ${changeNumber} Rejeté`,
                             text: 'Vous avez rejeté ce changement.',
                             icon: 'info',
-                            timer: 1500,
+                            timer: 1000,
                             showConfirmButton: false
                         });
                         Swal.choice = 'reject';
@@ -226,13 +308,11 @@
             const choice = Swal.choice;
 
             if (choice === 'accept') {
-                if (change.type === 'ajout') {
+                if (change.type === 'ajout' || change.type === 'modification') {
                     return change.added.join('');
                 } else if (change.type === 'suppression') {
                     // Rejeter la suppression signifie garder le code, donc ne rien ajouter
                     return '';
-                } else if (change.type === 'modification') {
-                    return change.added.join('');
                 }
             } else if (choice === 'reject') {
                 if (change.type === 'ajout') {
@@ -242,6 +322,7 @@
                     // Rejeter une suppression signifie garder le code supprimé
                     return change.removed.join('');
                 } else if (change.type === 'modification') {
+                    // Rejeter une modification signifie garder le code supprimé
                     return change.removed.join('');
                 }
             } else if (choice === 'custom') {
@@ -261,10 +342,10 @@
                         editor.session.setMode("ace/mode/javascript"); // Modifier selon le langage
                         let initialCode = generateInitialCustomCode(change, changeNumber);
                         editor.setValue(initialCode, -1); // -1 pour ne pas déplacer le curseur
-                        window.currentEditor = editor;
+                        editor.focus();
                     },
                     preConfirm: () => {
-                        const resolution = window.currentEditor.getValue();
+                        const resolution = ace.edit("aceEditor").getValue();
                         if (!resolution.trim()) {
                             Swal.showValidationMessage('Veuillez fournir une résolution pour le changement.');
                         }
