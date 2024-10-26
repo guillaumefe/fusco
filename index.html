@@ -424,7 +424,7 @@
                 'HTML Lang': '<html lang="en" />', // Valeur par défaut pour Lang
                 'HTML Title': '<title>My Page</title>',
                 'HTML Meta': '<meta charset="UTF-8">',
-                'HTML Script': '<script>console.log("Script component loaded");</script>',
+                'HTML Script': '<script>console.log("Script component loaded");<\/script>',
                 'HTML Header': '<header>Header Content</header>',
                 'HTML Footer': '<footer>Footer Content</footer>',
                 'HTML Nav': '<nav>Navigation Links</nav>',
@@ -509,10 +509,7 @@
                     // Pour les Custom Blocks, inclure la catégorie si définie
                     displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
                 }
-                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
-                    htmlBlocks.push({ title: displayTitle, index });
-                }
-                if (['HTML Script', ...].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
+                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Script', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
                     htmlBlocks.push({ title: displayTitle, index });
                 }
                 if (['CSS Class', 'CSS ID', 'CSS Selector', 'CSS Variable', 'CSS Flexbox', 'CSS Grid', 'CSS Media Query', 'CSS Pseudo-class', 'CSS Pseudo-element', 'CSS Animation', 'CSS Transition', 'CSS Import', 'CSS Box Model', 'CSS Position'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
