@@ -53,8 +53,23 @@
             transition: opacity 0.3s ease;
             color: #fff;
             border-radius: 5px;
-            padding:4px;
-            
+            padding: 10px;
+        }
+
+        /* Bouton de Bascule */
+        #toggle-categories-btn {
+            background-color: #b8860b; /* Jaune sombre */
+            width: 100%; /* Occupe toute la largeur */
+            margin-bottom: 20px;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #toggle-categories-btn:hover {
+            background-color: #daa520; /* Or */
         }
 
         #blocks { margin-top: 10px; }
@@ -203,52 +218,88 @@
 </head>
 <body>
     <div id="builder">
-        <h2>Construire votre page</h2>
+        <h2>HTML/CSS/JS Builder</h2>
+        
+        <!-- Bouton de Bascule des Catégories -->
+        <button id="toggle-categories-btn" onclick="toggleCategories()">Afficher/Cacher les Catégories</button>
 
         <!-- Group HTML Buttons -->
-        <div class="button-group">
+        <div class="button-group" id="html-group">
             <h3>HTML</h3>
-            <button class="btn-html" onclick="addBlock('DOCTYPE')">Add DOCTYPE</button>
-            <button class="btn-html" onclick="addBlock('Title')">Add Title</button>
-            <button class="btn-html" onclick="addBlock('Meta')">Add Meta</button>
-            <button class="btn-html" onclick="addBlock('Div')">Add Div</button>
-            <button class="btn-html" onclick="addBlock('Paragraph')">Add Paragraph</button>
-            <button class="btn-html" onclick="addBlock('Link')">Add Link</button>
-            <button class="btn-html" onclick="addBlock('Image')">Add Image</button>
-            <button class="btn-html" onclick="addBlock('Button')">Add Button</button>
+            <button class="btn-html" onclick="addBlock('HTML DOCTYPE')">DOCTYPE</button>
+            <button class="btn-html" onclick="addBlock('HTML Lang')">Lang</button>
+            <button class="btn-html" onclick="addBlock('HTML Title')">Title</button>
+            <button class="btn-html" onclick="addBlock('HTML Meta')">Meta</button>
+            <button class="btn-html" onclick="addBlock('HTML Header')">Header</button>
+            <button class="btn-html" onclick="addBlock('HTML Footer')">Footer</button>
+            <button class="btn-html" onclick="addBlock('HTML Nav')">Nav</button>
+            <button class="btn-html" onclick="addBlock('HTML Section')">Section</button>
+            <button class="btn-html" onclick="addBlock('HTML Article')">Article</button>
+            <button class="btn-html" onclick="addBlock('HTML Aside')">Aside</button>
+            <button class="btn-html" onclick="addBlock('HTML Main')">Main</button>
+            <button class="btn-html" onclick="addBlock('HTML Form')">Form</button>
+            <button class="btn-html" onclick="addBlock('HTML Input')">Input</button>
+            <button class="btn-html" onclick="addBlock('HTML Textarea')">Textarea</button>
+            <button class="btn-html" onclick="addBlock('HTML Select')">Select</button>
+            <button class="btn-html" onclick="addBlock('HTML Option')">Option</button>
+            <button class="btn-html" onclick="addBlock('HTML Button')">Button</button>
+            <button class="btn-html" onclick="addBlock('HTML UL')">UL</button>
+            <button class="btn-html" onclick="addBlock('HTML OL')">OL</button>
+            <button class="btn-html" onclick="addBlock('HTML LI')">LI</button>
+            <button class="btn-html" onclick="addBlock('HTML Table')">Table</button>
+            <button class="btn-html" onclick="addBlock('HTML TR')">TR</button>
+            <button class="btn-html" onclick="addBlock('HTML TH')">TH</button>
+            <button class="btn-html" onclick="addBlock('HTML TD')">TD</button>
         </div>
 
         <!-- Group CSS Buttons -->
-        <div class="button-group">
+        <div class="button-group" id="css-group">
             <h3>CSS</h3>
-            <button class="btn-css" onclick="addBlock('CSS')">Add CSS</button>
-            <button class="btn-css" onclick="addBlock('Animation')">Add CSS Animation</button>
-            <button class="btn-css" onclick="addBlock('Transition')">Add CSS Transition</button>
+            <button class="btn-css" onclick="addBlock('CSS Class')">Class</button>
+            <button class="btn-css" onclick="addBlock('CSS ID')">ID</button>
+            <button class="btn-css" onclick="addBlock('CSS Selector')">Selector</button>
+            <button class="btn-css" onclick="addBlock('CSS Variable')">Variable</button>
+            <button class="btn-css" onclick="addBlock('CSS Flexbox')">Flexbox</button>
+            <button class="btn-css" onclick="addBlock('CSS Grid')">Grid</button>
+            <button class="btn-css" onclick="addBlock('CSS Media Query')">Media Query</button>
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-class')">Pseudo-class</button>
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-element')">Pseudo-element</button>
+            <button class="btn-css" onclick="addBlock('CSS Animation')">Animation</button>
+            <button class="btn-css" onclick="addBlock('CSS Transition')">Transition</button>
+            <button class="btn-css" onclick="addBlock('CSS Import')">Import</button>
+            <button class="btn-css" onclick="addBlock('CSS Box Model')">Box Model</button>
+            <button class="btn-css" onclick="addBlock('CSS Position')">Position</button>
         </div>
 
         <!-- Group JS Buttons -->
-        <div class="button-group">
+        <div class="button-group" id="js-group">
             <h3>JavaScript</h3>
-            <button class="btn-js" onclick="addBlock('JS')">Add JS</button>
-            <button class="btn-js" onclick="addBlock('Constant')">Add JS Constant</button>
-            <button class="btn-js" onclick="addBlock('Variable')">Add JS Variable</button>
-            <button class="btn-js" onclick="addBlock('Function')">Add JS Function</button>
-            <button class="btn-js" onclick="addBlock('Event')">Add JS Event</button>
+            <button class="btn-js" onclick="addBlock('JS Constant')">Constant</button>
+            <button class="btn-js" onclick="addBlock('JS Variable')">Variable</button>
+            <button class="btn-js" onclick="addBlock('JS Function')">Function</button>
+            <button class="btn-js" onclick="addBlock('JS Class')">Class</button>
+            <button class="btn-js" onclick="addBlock('JS Module')">Module</button>
+            <button class="btn-js" onclick="addBlock('JS Event Listener')">Event Listener</button>
+            <button class="btn-js" onclick="addBlock('JS DOM Manipulation')">DOM Manipulation</button>
+            <button class="btn-js" onclick="addBlock('JS Fetch API')">Fetch API</button>
+            <button class="btn-js" onclick="addBlock('JS Async Function')">Async Function</button>
+            <button class="btn-js" onclick="addBlock('JS Promise')">Promise</button>
+            <button class="btn-js" onclick="addBlock('JS Arrow Function')">Arrow Function</button>
+            <button class="btn-js" onclick="addBlock('JS Array Methods')">Array Methods</button>
         </div>
 
         <!-- Custom Block Button -->
-        <div class="button-group">
+        <div class="button-group"  id="cs-group">
             <h3>Custom</h3>
-            <button class="btn-custom" onclick="addBlock('Custom')">Add Custom Block</button>
+            <button class="btn-custom" onclick="addBlock('Custom')">Custom Block</button>
         </div>
 
         <div id="blocks"></div>
 
-        <!-- Bouton Reset ajouté ici -->
+        <!-- Bouton Reset -->
         <button id="reset-btn" onclick="resetBlocks()">Reset</button>
     </div>
     <div id="preview">
-        <h2>Structure Générée</h2>
         <table id="htmlTable">
             <thead><tr><th>HTML Blocks</th></tr></thead>
             <tbody></tbody>
@@ -273,8 +324,8 @@
                 <button onclick="closeEditor()">X</button>
             </div>
             <div class="input-group">
-                <label for="block-name">Name (optional):</label>
-                <input type="text" id="block-name" placeholder="Enter component name">
+                <label for="block-name">Content (required):</label>
+                <input type="text" id="block-name" placeholder="Enter component content">
             </div>
             <div class="input-group" id="category-group" style="display: none;">
                 <label>Category (optional):</label>
@@ -300,6 +351,7 @@
         let blocks = [];
         let currentEditingIndex = null;
         let draggedIndex = null;
+        let categoriesVisible = true; // État des catégories
 
         // Initialisation de l'éditeur Ace
         const editor = ace.edit("ace-editor");
@@ -366,23 +418,56 @@
         // Obtenir le contenu par défaut en fonction du type
         function getDefaultContent(type) {
             const defaults = {
-                'DOCTYPE': '<!DOCTYPE html>',
-                'Title': '<title>My Page</title>',
-                'Meta': '<meta charset="UTF-8">',
-                'CSS': 'body { background-color: lightblue; }',
-                'JS': 'console.log("Hello World");',
-                'Div': '<div>Content here</div>',
-                'Paragraph': '<p>This is a paragraph.</p>',
-                'Link': '<a href="https://example.com">Example Link</a>',
-                'Image': '<img src="https://example.com/image.jpg" alt="Example Image">',
-                'Button': '<button>Click me</button>',
-                'Constant': 'const myConstant = "Hello";',
-                'Variable': 'let myVariable = 10;',
-                'Function': 'function myFunction() { return true; }',
-                'Event': 'document.body.onclick = () => alert("Clicked!");',
-                'Animation': '@keyframes myAnimation { from { opacity: 0; } to { opacity: 1; } }',
-                'Transition': 'transition: all 0.5s ease;',
-                'Custom': '' // Contenu vide par défaut pour les Custom Blocks
+                'HTML DOCTYPE': '<!DOCTYPE html>',
+                'HTML Lang': '<html lang="en" />', // Valeur par défaut pour Lang
+                'HTML Title': '<title>My Page</title>',
+                'HTML Meta': '<meta charset="UTF-8">',
+                'HTML Header': '<header>Header Content</header>',
+                'HTML Footer': '<footer>Footer Content</footer>',
+                'HTML Nav': '<nav>Navigation Links</nav>',
+                'HTML Section': '<section>Section Content</section>',
+                'HTML Article': '<article>Article Content</article>',
+                'HTML Aside': '<aside>Aside Content</aside>',
+                'HTML Main': '<main>Main Content</main>',
+                'HTML Form': '<form action="#" method="post">Form Content</form>',
+                'HTML Input': '<input type="text" placeholder="Enter text">',
+                'HTML Textarea': '<textarea placeholder="Enter text"></textarea>',
+                'HTML Select': '<select><option value="option1">Option 1</option></select>',
+                'HTML Option': '<option value="option1">Option 1</option>',
+                'HTML Button': '<button>Click me</button>',
+                'HTML UL': '<ul><li>Item 1</li></ul>',
+                'HTML OL': '<ol><li>Item 1</li></ol>',
+                'HTML LI': '<li>List Item</li>',
+                'HTML Table': '<table><tr><th>Header</th></tr></table>',
+                'HTML TR': '<tr><td>Data</td></tr>',
+                'HTML TH': '<th>Header</th>',
+                'HTML TD': '<td>Data</td>',
+                'CSS Class': '.my-class { color: red; }',
+                'CSS ID': '#my-id { font-size: 16px; }',
+                'CSS Selector': 'p { margin-bottom: 10px; }',
+                'CSS Variable': '--main-color: #3498db;',
+                'CSS Flexbox': 'display: flex; justify-content: center; align-items: center;',
+                'CSS Grid': 'display: grid; grid-template-columns: repeat(3, 1fr);',
+                'CSS Media Query': '@media (max-width: 600px) { body { background-color: lightgreen; } }',
+                'CSS Pseudo-class': 'a:hover { color: blue; }',
+                'CSS Pseudo-element': 'p::first-letter { font-size: 2em; }',
+                'CSS Animation': '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
+                'CSS Transition': 'transition: all 0.3s ease;',
+                'CSS Import': '@import url("styles.css");',
+                'CSS Box Model': 'div { padding: 10px; margin: 5px; border: 1px solid #000; }',
+                'CSS Position': 'position: absolute; top: 50px; left: 100px;',
+                'JS Constant': 'const myConstant = "Hello World";',
+                'JS Variable': 'let myVariable = 10;',
+                'JS Function': 'function myFunction() { return true; }',
+                'JS Class': 'class MyClass { constructor() { this.name = "MyClass"; } }',
+                'JS Module': 'export function myModuleFunction() { console.log("Module Function"); }',
+                'JS Event Listener': 'document.getElementById("myButton").addEventListener("click", function() { alert("Button Clicked!"); });',
+                'JS DOM Manipulation': 'const div = document.createElement("div"); div.textContent = "New Div"; document.body.appendChild(div);',
+                'JS Fetch API': 'fetch("https://api.example.com/data").then(response => response.json()).then(data => console.log(data));',
+                'JS Async Function': 'async function fetchData() { const response = await fetch("https://api.example.com/data"); const data = await response.json(); console.log(data); }',
+                'JS Promise': 'const myPromise = new Promise((resolve, reject) => { setTimeout(() => { resolve("Promise Resolved"); }, 1000); });',
+                'JS Arrow Function': 'const myArrowFunction = () => { console.log("Arrow Function"); };',
+                'JS Array Methods': 'const arr = [1, 2, 3]; const doubled = arr.map(num => num * 2);'
             };
             return defaults[type] || '';
         }
@@ -421,13 +506,13 @@
                     // Pour les Custom Blocks, inclure la catégorie si définie
                     displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
                 }
-                if (['DOCTYPE', 'Title', 'Meta', 'Div', 'Paragraph', 'Link', 'Image', 'Button', 'HTML'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
+                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
                     htmlBlocks.push({ title: displayTitle, index });
                 }
-                if (['CSS', 'Animation', 'Transition'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
+                if (['CSS Class', 'CSS ID', 'CSS Selector', 'CSS Variable', 'CSS Flexbox', 'CSS Grid', 'CSS Media Query', 'CSS Pseudo-class', 'CSS Pseudo-element', 'CSS Animation', 'CSS Transition', 'CSS Import', 'CSS Box Model', 'CSS Position'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
                     cssBlocks.push({ title: displayTitle, index });
                 }
-                if (['JS', 'Constant', 'Variable', 'Function', 'Event'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
+                if (['JS Constant', 'JS Variable', 'JS Function', 'JS Class', 'JS Module', 'JS Event Listener', 'JS DOM Manipulation', 'JS Fetch API', 'JS Async Function', 'JS Promise', 'JS Arrow Function', 'JS Array Methods'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
                     jsBlocks.push({ title: displayTitle, index });
                 }
             });
@@ -469,28 +554,50 @@
         // Générer le contenu HTML
         function generateHTML() {
             let html = '';
-            // Parcourir les blocs pour HTML, CSS, JS
+            // Extraire les blocs DOCTYPE et Lang
+            let doctype = '<!DOCTYPE html>';
+            let lang = '<html lang="en" />'; // Valeur par défaut
+            const doctypeBlocks = blocks.filter(block => block.type === 'HTML DOCTYPE');
+            if (doctypeBlocks.length > 0) {
+                doctype = doctypeBlocks[0].content || '<!DOCTYPE html>';
+            }
+            const langBlocks = blocks.filter(block => block.type === 'HTML Lang');
+            if (langBlocks.length > 0) {
+                lang = langBlocks[0].content || '<html lang="en" />';
+            }
+            html += `${doctype}\n`;
+            html += `${lang}\n`;
+            html += `<head>\n`;
+
+            // Parcourir les blocs pour le head (HTML, CSS, JS)
             blocks.forEach(block => {
-                if (block.type === 'DOCTYPE') {
+                if (block.type === 'HTML DOCTYPE' || block.type === 'HTML Lang') {
+                    // DOCTYPE et Lang sont gérés séparément
+                    return;
+                }
+                if (block.type.startsWith('HTML ')) {
                     html += `${block.content}\n`;
-                } else if (block.type === 'Title') {
-                    html += `${block.content}\n`;
-                } else if (block.type === 'Meta') {
-                    html += `${block.content}\n`;
-                } else if (block.type === 'CSS' || (block.isCustom && block.category === 'CSS')) {
-                    html += `<style>\n${block.content}\n<\/style>\n`;
-                } else if (block.type === 'JS' || (block.isCustom && block.category === 'JS')) {
+                } else if (block.type.startsWith('CSS ')) {
+                    html += `<style>\n${block.content}\n</style>\n`;
+                } else if (block.type.startsWith('JS ')) {
                     html += `<script>\n${block.content}\n<\/script>\n`;
                 }
             });
-            html += '<body>\n';
-            // Parcourir les blocs pour le contenu du body
+
+            html += `</head>\n`;
+            html += `<body>\n`;
+
+            // Parcourir les blocs pour le contenu du body (HTML)
             blocks.forEach(block => {
-                if (block.type === 'Div' || block.type === 'Paragraph' || block.type === 'Link' || block.type === 'Image' || block.type === 'Button' || block.type === 'HTML' || (block.isCustom && block.category === 'HTML')) {
+                if (block.type.startsWith('HTML ')) {
+                    // Exclure DOCTYPE et Lang qui sont dans head
+                    if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
                     html += `${block.content}\n`;
                 }
             });
-            html += '</body>\n';
+
+            html += `</body>\n`;
+            html += `</html>\n`;
             return html;
         }
 
@@ -514,8 +621,13 @@
             currentEditingIndex = index;
             const block = blocks[index];
             document.getElementById('editor-title-text').textContent = `Edit ${block.type} Component`;
-            document.getElementById('block-name').value = block.title;
-            editor.session.setValue(block.content);
+            document.getElementById('block-name').value = block.type.startsWith('HTML Lang') ? block.content : block.title;
+            if (block.type === 'HTML Lang') {
+                document.getElementById('block-name').placeholder = 'e.g., <html lang="en" />';
+            } else {
+                document.getElementById('block-name').placeholder = 'Enter component name';
+            }
+            editor.session.setValue(block.content.startsWith('<') ? block.content : block.content);
             
             // Afficher ou masquer le groupe de catégories en fonction du type du bloc
             const categoryGroup = document.getElementById('category-group');
@@ -548,14 +660,20 @@
         // Sauvegarder le contenu édité dans le bloc
         function saveContent() {
             if (currentEditingIndex !== null) {
-                const newTitle = document.getElementById('block-name').value.trim();
-                // Si le nom est vide, utiliser le type comme nom par défaut
-                const finalTitle = newTitle !== '' ? newTitle : blocks[currentEditingIndex].type;
-                blocks[currentEditingIndex].title = finalTitle;
-                blocks[currentEditingIndex].content = editor.session.getValue();
-                if (blocks[currentEditingIndex].isCustom) {
-                    const selectedCategory = document.querySelector('input[name="category"]:checked');
-                    blocks[currentEditingIndex].category = selectedCategory ? selectedCategory.value : null;
+                const newContent = document.getElementById('block-name').value.trim();
+                const block = blocks[currentEditingIndex];
+                if (block.type === 'HTML Lang') {
+                    // Pour Lang, le contenu est directement l'attribut lang
+                    blocks[currentEditingIndex].content = newContent || 'en'; // Utilisez 'en' si vide
+                } else {
+                    // Si le nom est vide, utiliser le type comme nom par défaut
+                    const finalTitle = newContent !== '' ? newContent : block.type;
+                    blocks[currentEditingIndex].title = finalTitle;
+                    blocks[currentEditingIndex].content = editor.session.getValue();
+                    if (blocks[currentEditingIndex].isCustom) {
+                        const selectedCategory = document.querySelector('input[name="category"]:checked');
+                        blocks[currentEditingIndex].category = selectedCategory ? selectedCategory.value : null;
+                    }
                 }
                 renderBlocks();
                 updateTables();
@@ -633,28 +751,8 @@
         // Télécharger la page HTML générée
         function downloadPage() {
             let html = '';
-            // Parcourir les blocs pour HTML, CSS, JS
-            blocks.forEach(block => {
-                if (block.type === 'DOCTYPE') {
-                    html += `${block.content}\n`;
-                } else if (block.type === 'Title') {
-                    html += `${block.content}\n`;
-                } else if (block.type === 'Meta') {
-                    html += `${block.content}\n`;
-                } else if (block.type === 'CSS' || (block.isCustom && block.category === 'CSS')) {
-                    html += `<style>\n${block.content}\n<\/style>\n`;
-                } else if (block.type === 'JS' || (block.isCustom && block.category === 'JS')) {
-                    html += `<script>\n${block.content}\n<\/script>\n`;
-                }
-            });
-            html += '<body>\n';
-            // Parcourir les blocs pour le contenu du body
-            blocks.forEach(block => {
-                if (block.type === 'Div' || block.type === 'Paragraph' || block.type === 'Link' || block.type === 'Image' || block.type === 'Button' || block.type === 'HTML' || (block.isCustom && block.category === 'HTML')) {
-                    html += `${block.content}\n`;
-                }
-            });
-            html += '</body>\n';
+            // Générer le HTML
+            html = generateHTML();
 
             const blob = new Blob([html], { type: 'text/html' });
             const link = document.createElement('a');
@@ -696,6 +794,15 @@
             } else {
                 iframe.style.display = 'none';
             }
+        }
+
+        // Fonction pour basculer la visibilité des catégories et de leurs boutons
+        function toggleCategories() {
+            categoriesVisible = !categoriesVisible;
+            document.getElementById('html-group').style.display = categoriesVisible ? 'block' : 'none';
+            document.getElementById('css-group').style.display = categoriesVisible ? 'block' : 'none';
+            document.getElementById('js-group').style.display = categoriesVisible ? 'block' : 'none';
+            document.getElementById('cs-group').style.display = categoriesVisible ? 'block' : 'none';
         }
     </script>
 </body>
