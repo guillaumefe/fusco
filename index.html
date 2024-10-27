@@ -711,43 +711,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
-window.onload = function() {
-    const savedBlocks = localStorage.getItem(blocksKey);
-    if (savedBlocks) {
-        try {
-            blocks = JSON.parse(savedBlocks);
-        } catch (e) {
-            blocks = [];
-        }
-    }
-    renderBlocks();
-    updateTables();
-    updatePreview();
-    toggleResetButton();
-    togglePreview();
-};
-
-function saveBlocks() {
-    localStorage.setItem(blocksKey, JSON.stringify(blocks));
-}
-
-function addBlock(type) {
-    const block = {
-        type,
-        title: '',
-        content: getDefaultContent(type),
-        isCustom: type === 'Custom',
-        category: type === 'Custom' ? null : null
-    };
-    blocks.push(block);
-    renderBlocks();
-    updateTables();
-    saveBlocks();
-    updatePreview();
-    toggleResetButton();
-    togglePreview();
-}
-
 function getDefaultContent(type) {
     const defaults = {
         'HTML DOCTYPE': '<!DOCTYPE html>',
@@ -1759,10 +1722,46 @@ window.onload = async function() {
     }
 };
 
+</script>
+<script>
 
+function addBlock(type) {
+    const block = {
+        type,
+        title: '',
+        content: getDefaultContent(type),
+        isCustom: type === 'Custom',
+        category: type === 'Custom' ? null : null
+    };
+    blocks.push(block);
+    renderBlocks();   // Affiche les blocs
+    updateTables();   // Mets à jour les tableaux
+    saveBlocks();     // Sauvegarde dans le localStorage
+    updatePreview();
+    toggleResetButton();
+    togglePreview();
+}
 
-    
+function saveBlocks() {
+    localStorage.setItem(blocksKey, JSON.stringify(blocks));
+}
+
+window.onload = function() {
+    const savedBlocks = localStorage.getItem(blocksKey);
+    if (savedBlocks) {
+        try {
+            blocks = JSON.parse(savedBlocks);
+        } catch (e) {
+            blocks = [];
+        }
+    }
+    renderBlocks();
+    updateTables();
+    updatePreview();
+    toggleResetButton();
+    togglePreview();
+};
+
 </script>
 </body>
 </html>
-
