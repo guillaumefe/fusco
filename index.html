@@ -1,23 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!--
-    Process:
-    * Add component :
-     - Add MY COMPONENT to the HTML group : <button class="btn-js" onclick="addBlock('MY COMPONENT')">MY COMPONENT</button>
-     - Update getDefaultContent to provide default content :
-        ```
-        function getDefaultContent(type) {
-            const defaults = {
-                'MY COMPONENT': '<script>console.log("MY COMPONENT loaded");</script>',
-                'MY COMPONENT': '<script src="https://cdn.MYCOMPONENT.com/library.js"></script>',
-                // Autres valeurs par défaut pour les autres blocs
-            };
-            return defaults[type] || '';
-        }
-        ```
-     - Update GenerateHTML to include MY COMPONENT in the correct HTML section
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fusko</title>
@@ -59,14 +42,57 @@
             border: none;
             color: #fff;
             border-radius: 5px;
+            position: relative; /* Nécessaire pour les tooltips */
         }
-        
+
+        /* Tooltip Styles */
+        .button-group button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            width: max-content;
+            max-width: 250px;
+            text-align: left;
+            z-index: 100;
+        }
+
+        .button-group button::before {
+            content: '';
+            position: absolute;
+            bottom: 115%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .button-group button:hover::after,
+        .button-group button:hover::before {
+            opacity: 1;
+        }
+
         /* Bouton Reset spécifique */
         #reset-btn { 
-            background-color: #d9534f; /* Rouge pour indiquer une action destructive */
-            width: 100%; /* Occupe toute la largeur */
+            background-color: #d9534f;
+            width: 100%;
             margin-top: 20px;
-            display: none; /* Caché par défaut */
+            display: none;
             transition: opacity 0.3s ease;
             color: #fff;
             border-radius: 5px;
@@ -75,8 +101,8 @@
 
         /* Bouton de Bascule */
         #toggle-categories-btn {
-            background-color: #b8860b; /* Jaune sombre */
-            width: 100%; /* Occupe toute la largeur */
+            background-color: #b8860b;
+            width: 100%;
             margin-bottom: 20px;
             color: #fff;
             border: none;
@@ -87,7 +113,7 @@
             margin-top:15px;
         }
         #toggle-categories-btn:hover {
-            background-color: #daa520; /* Or */
+            background-color: #daa520;
         }
 
         #blocks { margin-top: 10px; }
@@ -102,7 +128,7 @@
             justify-content: space-between; 
             font-size: 1.1rem; 
             transition: opacity 0.3s, border 0.3s; 
-            position: relative; /* Pour le drop-indicator */
+            position: relative; 
         }
         .highlight { border: 2px solid #f56a79; }
         .custom-block { background-color: #ffcccb; }
@@ -145,7 +171,7 @@
 
         /* Popup Editor */
         #editor-modal {
-            display: none; /* Masqué par défaut */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -178,7 +204,7 @@
             flex-grow: 1; 
             height: 100%; 
             width: 100%; 
-            min-height: 0; /* Important pour Flexbox */
+            min-height: 0; 
         }
         #editor-footer {
             padding: 10px;
@@ -227,97 +253,340 @@
             border-radius: 5px;
             height: 400px;
             width: 100%;
-            display: none; /* Caché par défaut */
+            display: none;
             transition: opacity 0.3s ease;
         }
     </style>
-    <!-- Charger Ace Editor -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 </head>
 <body>
     <div id="builder">
         <h2>Fusko</h2>
-        
         <div id="storage-explorer"></div>
-        
-        <!-- Bouton de Bascule des Catégories -->
         <button id="toggle-categories-btn" onclick="toggleCategories()">Display/Hide categories</button>
 
         <!-- Group HTML Buttons -->
         <div class="button-group" id="html-group">
             <h3>HTML</h3>
-            <button class="btn-html" onclick="addBlock('HTML DOCTYPE')">DOCTYPE</button>
-            <button class="btn-html" onclick="addBlock('HTML Lang')">Lang</button>
-            <button class="btn-html" onclick="addBlock('HTML Title')">Title</button>
-            <button class="btn-html" onclick="addBlock('HTML Meta')">Meta</button>
-            <button class="btn-html" onclick="addBlock('HTML Header')">Header</button>
-            <button class="btn-html" onclick="addBlock('HTML Footer')">Footer</button>
-            <button class="btn-html" onclick="addBlock('HTML Nav')">Nav</button>
-            <button class="btn-html" onclick="addBlock('HTML Section')">Section</button>
-            <button class="btn-html" onclick="addBlock('HTML Article')">Article</button>
-            <button class="btn-html" onclick="addBlock('HTML Aside')">Aside</button>
-            <button class="btn-html" onclick="addBlock('HTML Main')">Main</button>
-            <button class="btn-html" onclick="addBlock('HTML Form')">Form</button>
-            <button class="btn-html" onclick="addBlock('HTML Input')">Input</button>
-            <button class="btn-html" onclick="addBlock('HTML Textarea')">Textarea</button>
-            <button class="btn-html" onclick="addBlock('HTML Select')">Select</button>
-            <button class="btn-html" onclick="addBlock('HTML Option')">Option</button>
-            <button class="btn-html" onclick="addBlock('HTML Button')">Button</button>
-            <button class="btn-html" onclick="addBlock('HTML UL')">UL</button>
-            <button class="btn-html" onclick="addBlock('HTML OL')">OL</button>
-            <button class="btn-html" onclick="addBlock('HTML LI')">LI</button>
-            <button class="btn-html" onclick="addBlock('HTML Table')">Table</button>
-            <button class="btn-html" onclick="addBlock('HTML TR')">TR</button>
-            <button class="btn-html" onclick="addBlock('HTML TH')">TH</button>
-            <button class="btn-html" onclick="addBlock('HTML TD')">TD</button>
+            <button class="btn-html" onclick="addBlock('HTML DOCTYPE')" data-tooltip="HTML DOCTYPE:
+Définit le type de document.
+Utilisation : Placez-le au début de vos fichiers HTML.
+Apparence : Bouton étiqueté 'DOCTYPE'.">
+                DOCTYPE
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Lang')" data-tooltip="HTML Lang:
+Spécifie la langue du document.
+Utilisation : Utilisé pour définir la langue principale de la page web.
+Apparence : Bouton étiqueté 'Lang'.">
+                Lang
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Title')" data-tooltip="HTML Title:
+Définit le titre de la page.
+Utilisation : Placez-le dans la section &lt;head&gt; pour définir le titre affiché dans l'onglet du navigateur.
+Apparence : Bouton étiqueté 'Title'.">
+                Title
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Meta')" data-tooltip="HTML Meta:
+Définit des métadonnées pour le document.
+Utilisation : Utilisé pour spécifier le jeu de caractères, la description, etc.
+Apparence : Bouton étiqueté 'Meta'.">
+                Meta
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Header')" data-tooltip="HTML Header:
+Crée une section d'en-tête pour le document.
+Utilisation : Utilisé pour contenir des éléments de navigation ou des titres.
+Apparence : Bouton étiqueté 'Header'.">
+                Header
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Footer')" data-tooltip="HTML Footer:
+Crée une section de pied de page pour le document.
+Utilisation : Utilisé pour contenir des informations de copyright ou des liens de bas de page.
+Apparence : Bouton étiqueté 'Footer'.">
+                Footer
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Nav')" data-tooltip="HTML Nav:
+Crée une barre de navigation.
+Utilisation : Utilisé pour les liens de navigation principaux du site.
+Apparence : Bouton étiqueté 'Nav'.">
+                Nav
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Section')" data-tooltip="HTML Section:
+Crée une section dans le document.
+Utilisation : Utilisé pour regrouper des contenus thématiquement liés.
+Apparence : Bouton étiqueté 'Section'.">
+                Section
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Article')" data-tooltip="HTML Article:
+Crée un article autonome.
+Utilisation : Utilisé pour les contenus indépendants comme des billets de blog.
+Apparence : Bouton étiqueté 'Article'.">
+                Article
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Aside')" data-tooltip="HTML Aside:
+Crée une section complémentaire.
+Utilisation : Utilisé pour des contenus secondaires comme des barres latérales.
+Apparence : Bouton étiqueté 'Aside'.">
+                Aside
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Main')" data-tooltip="HTML Main:
+Définit le contenu principal du document.
+Utilisation : Utilisé pour encapsuler le contenu central de la page.
+Apparence : Bouton étiqueté 'Main'.">
+                Main
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Form')" data-tooltip="HTML Form:
+Crée un formulaire.
+Utilisation : Utilisé pour collecter des données utilisateur.
+Apparence : Bouton étiqueté 'Form'.">
+                Form
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Input')" data-tooltip="HTML Input:
+Crée un champ de saisie.
+Utilisation : Utilisé pour permettre aux utilisateurs de saisir des données.
+Apparence : Bouton étiqueté 'Input'.">
+                Input
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Textarea')" data-tooltip="HTML Textarea:
+Crée une zone de texte multiligne.
+Utilisation : Utilisé pour les commentaires ou les descriptions longues.
+Apparence : Bouton étiqueté 'Textarea'.">
+                Textarea
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Select')" data-tooltip="HTML Select:
+Crée un menu déroulant.
+Utilisation : Utilisé pour sélectionner une option parmi plusieurs.
+Apparence : Bouton étiqueté 'Select'.">
+                Select
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Option')" data-tooltip="HTML Option:
+Définit une option dans un menu déroulant.
+Utilisation : Utilisé à l'intérieur de &lt;select&gt; pour les différentes options disponibles.
+Apparence : Bouton étiqueté 'Option'.">
+                Option
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Button')" data-tooltip="HTML Button:
+Crée un bouton cliquable.
+Utilisation : Utilisé pour les actions comme soumettre un formulaire ou déclencher des événements.
+Apparence : Bouton étiqueté 'Button'.">
+                Button
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML UL')" data-tooltip="HTML UL:
+Crée une liste non ordonnée.
+Utilisation : Utilisé pour les listes à puces.
+Apparence : Bouton étiqueté 'UL'.">
+                UL
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML OL')" data-tooltip="HTML OL:
+Crée une liste ordonnée.
+Utilisation : Utilisé pour les listes numérotées.
+Apparence : Bouton étiqueté 'OL'.">
+                OL
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML LI')" data-tooltip="HTML LI:
+Crée un élément de liste.
+Utilisation : Utilisé à l'intérieur de &lt;ul&gt; ou &lt;ol&gt; pour les éléments individuels.
+Apparence : Bouton étiqueté 'LI'.">
+                LI
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML Table')" data-tooltip="HTML Table:
+Crée un tableau.
+Utilisation : Utilisé pour afficher des données tabulaires.
+Apparence : Bouton étiqueté 'Table'.">
+                Table
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML TR')" data-tooltip="HTML TR:
+Crée une rangée dans un tableau.
+Utilisation : Utilisé à l'intérieur de &lt;table&gt; pour définir les rangées.
+Apparence : Bouton étiqueté 'TR'.">
+                TR
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML TH')" data-tooltip="HTML TH:
+Crée une cellule d'en-tête dans un tableau.
+Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les en-têtes de colonnes.
+Apparence : Bouton étiqueté 'TH'.">
+                TH
+            </button>
+            <button class="btn-html" onclick="addBlock('HTML TD')" data-tooltip="HTML TD:
+Crée une cellule de données dans un tableau.
+Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les données des colonnes.
+Apparence : Bouton étiqueté 'TD'.">
+                TD
+            </button>
         </div>
 
         <!-- Group CSS Buttons -->
         <div class="button-group" id="css-group">
             <h3>CSS</h3>
-            <button class="btn-css" onclick="addBlock('CSS Class')">Class</button>
-            <button class="btn-css" onclick="addBlock('CSS ID')">ID</button>
-            <button class="btn-css" onclick="addBlock('CSS Selector')">Selector</button>
-            <button class="btn-css" onclick="addBlock('CSS Variable')">Variable</button>
-            <button class="btn-css" onclick="addBlock('CSS Flexbox')">Flexbox</button>
-            <button class="btn-css" onclick="addBlock('CSS Grid')">Grid</button>
-            <button class="btn-css" onclick="addBlock('CSS Media Query')">Media Query</button>
-            <button class="btn-css" onclick="addBlock('CSS Pseudo-class')">Pseudo-class</button>
-            <button class="btn-css" onclick="addBlock('CSS Pseudo-element')">Pseudo-element</button>
-            <button class="btn-css" onclick="addBlock('CSS Animation')">Animation</button>
-            <button class="btn-css" onclick="addBlock('CSS Transition')">Transition</button>
-            <button class="btn-css" onclick="addBlock('CSS Import')">Import</button>
-            <button class="btn-css" onclick="addBlock('CSS Box Model')">Box Model</button>
-            <button class="btn-css" onclick="addBlock('CSS Position')">Position</button>
+            <button class="btn-css" onclick="addBlock('CSS Class')" data-tooltip="CSS Class:
+Définit une classe CSS.
+Utilisation : Appliquez des styles réutilisables à plusieurs éléments HTML.
+Apparence : Bouton étiqueté 'Class'.">
+                Class
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS ID')" data-tooltip="CSS ID:
+Définit un identifiant CSS unique.
+Utilisation : Appliquez des styles à un élément HTML spécifique.
+Apparence : Bouton étiqueté 'ID'.">
+                ID
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Selector')" data-tooltip="CSS Selector:
+Sélectionne des éléments HTML pour appliquer des styles.
+Utilisation : Utilisé pour cibler des éléments spécifiques dans votre CSS.
+Apparence : Bouton étiqueté 'Selector'.">
+                Selector
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Variable')" data-tooltip="CSS Variable:
+Définit une variable CSS.
+Utilisation : Utilisé pour stocker des valeurs réutilisables comme les couleurs ou les tailles.
+Apparence : Bouton étiqueté 'Variable'.">
+                Variable
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Flexbox')" data-tooltip="CSS Flexbox:
+Utilise le modèle de boîte flexible pour la mise en page.
+Utilisation : Facilite la création de mises en page réactives et alignées.
+Apparence : Bouton étiqueté 'Flexbox'.">
+                Flexbox
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Grid')" data-tooltip="CSS Grid:
+Utilise le système de grille pour la mise en page.
+Utilisation : Permet de créer des mises en page complexes avec des lignes et des colonnes.
+Apparence : Bouton étiqueté 'Grid'.">
+                Grid
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Media Query')" data-tooltip="CSS Media Query:
+Applique des styles conditionnels basés sur les caractéristiques de l'appareil.
+Utilisation : Utilisé pour créer des designs responsives.
+Apparence : Bouton étiqueté 'Media Query'.">
+                Media Query
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-class')" data-tooltip="CSS Pseudo-class:
+Cible les états spéciaux des éléments.
+Utilisation : Utilisé pour appliquer des styles lors d'interactions comme le survol.
+Apparence : Bouton étiqueté 'Pseudo-class'.">
+                Pseudo-class
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-element')" data-tooltip="CSS Pseudo-element:
+Cible une partie spécifique d'un élément.
+Utilisation : Utilisé pour ajouter des éléments décoratifs ou stylisés.
+Apparence : Bouton étiqueté 'Pseudo-element'.">
+                Pseudo-element
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Animation')" data-tooltip="CSS Animation:
+Crée des animations pour les éléments.
+Utilisation : Utilisé pour animer les propriétés CSS.
+Apparence : Bouton étiqueté 'Animation'.">
+                Animation
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Transition')" data-tooltip="CSS Transition:
+Définit les transitions entre les états des éléments.
+Utilisation : Utilisé pour animer les changements de propriétés CSS.
+Apparence : Bouton étiqueté 'Transition'.">
+                Transition
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Import')" data-tooltip="CSS Import:
+Importe des feuilles de style externes.
+Utilisation : Utilisé pour organiser et modulariser le CSS.
+Apparence : Bouton étiqueté 'Import'.">
+                Import
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Box Model')" data-tooltip="CSS Box Model:
+Définit le modèle de boîte des éléments.
+Utilisation : Utilisé pour gérer les marges, les bordures, le padding et la taille des éléments.
+Apparence : Bouton étiqueté 'Box Model'.">
+                Box Model
+            </button>
+            <button class="btn-css" onclick="addBlock('CSS Position')" data-tooltip="CSS Position:
+Définit la position des éléments.
+Utilisation : Utilisé pour positionner les éléments de manière relative, absolue, fixe ou sticky.
+Apparence : Bouton étiqueté 'Position'.">
+                Position
+            </button>
         </div>
 
         <!-- Group JS Buttons -->
         <div class="button-group" id="js-group">
             <h3>JavaScript</h3>
-            <button class="btn-js" onclick="addBlock('JS Script')">Script</button>
-            <button class="btn-js" onclick="addBlock('JS Constant')">Constant</button>
-            <button class="btn-js" onclick="addBlock('JS Variable')">Variable</button>
-            <button class="btn-js" onclick="addBlock('JS Function')">Function</button>
-            <button class="btn-js" onclick="addBlock('JS Class')">Class</button>
-            <button class="btn-js" onclick="addBlock('JS Module')">Module</button>
-            <button class="btn-js" onclick="addBlock('JS Event Listener')">Event Listener</button>
-            <button class="btn-js" onclick="addBlock('JS DOM Manipulation')">DOM Manipulation</button>
-            <button class="btn-js" onclick="addBlock('JS Fetch API')">Fetch API</button>
-            <button class="btn-js" onclick="addBlock('JS Async Function')">Async Function</button>
-            <button class="btn-js" onclick="addBlock('JS Promise')">Promise</button>
-            <button class="btn-js" onclick="addBlock('JS Arrow Function')">Arrow Function</button>
-            <button class="btn-js" onclick="addBlock('JS Array Methods')">Array Methods</button>
+            <button class="btn-js" onclick="addBlock('JS Script')" data-tooltip="JS Script:
+Inclut ou exécute un script JavaScript.
+Utilisation : Ajoutez des interactions dynamiques à votre page web.
+Apparence : Bouton étiqueté 'Script'.">
+                Script
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Constant')" data-tooltip="JS Constant:
+Définit une constante en JavaScript.
+Utilisation : Utilisé pour déclarer des variables dont la valeur ne changera pas.
+Apparence : Bouton étiqueté 'Constant'.">
+                Constant
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Variable')" data-tooltip="JS Variable:
+Définit une variable en JavaScript.
+Utilisation : Utilisé pour stocker des données qui peuvent changer.
+Apparence : Bouton étiqueté 'Variable'.">
+                Variable
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Function')" data-tooltip="JS Function:
+Définit une fonction en JavaScript.
+Utilisation : Encapsule des blocs de code réutilisables.
+Apparence : Bouton étiqueté 'Function'.">
+                Function
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Class')" data-tooltip="JS Class:
+Définit une classe en JavaScript.
+Utilisation : Utilisé pour créer des objets avec des propriétés et des méthodes.
+Apparence : Bouton étiqueté 'Class'.">
+                Class
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Module')" data-tooltip="JS Module:
+Crée un module JavaScript.
+Utilisation : Utilisé pour organiser le code en modules réutilisables.
+Apparence : Bouton étiqueté 'Module'.">
+                Module
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Event Listener')" data-tooltip="JS Event Listener:
+Ajoute un écouteur d'événement à un élément.
+Utilisation : Utilisé pour gérer les interactions utilisateur comme les clics.
+Apparence : Bouton étiqueté 'Event Listener'.">
+                Event Listener
+            </button>
+            <button class="btn-js" onclick="addBlock('JS DOM Manipulation')" data-tooltip="JS DOM Manipulation:
+Modifie le Document Object Model.
+Utilisation : Utilisé pour créer, supprimer ou modifier des éléments HTML dynamiquement.
+Apparence : Bouton étiqueté 'DOM Manipulation'.">
+                DOM Manipulation
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Fetch API')" data-tooltip="JS Fetch API:
+Effectue des requêtes réseau.
+Utilisation : Utilisé pour récupérer des données depuis des APIs ou des serveurs.
+Apparence : Bouton étiqueté 'Fetch API'.">
+                Fetch API
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Async Function')" data-tooltip="JS Async Function:
+Définit une fonction asynchrone.
+Utilisation : Utilisé pour gérer des opérations asynchrones comme les requêtes réseau.
+Apparence : Bouton étiqueté 'Async Function'.">
+                Async Function
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Promise')" data-tooltip="JS Promise:
+Crée une promesse en JavaScript.
+Utilisation : Utilisé pour gérer les opérations asynchrones de manière plus structurée.
+Apparence : Bouton étiqueté 'Promise'.">
+                Promise
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Arrow Function')" data-tooltip="JS Arrow Function:
+Définit une fonction fléchée.
+Utilisation : Utilisé pour des fonctions concises et lexiquement liées.
+Apparence : Bouton étiqueté 'Arrow Function'.">
+                Arrow Function
+            </button>
+            <button class="btn-js" onclick="addBlock('JS Array Methods')" data-tooltip="JS Array Methods:
+Utilise des méthodes d'array en JavaScript.
+Utilisation : Utilisé pour manipuler et itérer sur des tableaux.
+Apparence : Bouton étiqueté 'Array Methods'.">
+                Array Methods
+            </button>
         </div>
 
-        <!-- Custom Block Button -->
-        <!-- <div class="button-group"  id="cs-group">
-            <h3>Custom</h3>
-            <button class="btn-custom" onclick="addBlock('Custom')">Custom Block</button>
-        </div> -->
-
         <div id="blocks"></div>
-
-        <!-- Bouton Reset -->
         <button id="reset-btn" onclick="resetBlocks()">Reset</button>
     </div>
     <div id="preview">
@@ -337,7 +606,6 @@
         <iframe id="generated-preview" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
 
-    <!-- Popup Modal for Editing -->
     <div id="editor-modal">
         <div id="editor-container">
             <div id="editor-title">
@@ -368,22 +636,20 @@
     </div>
 
     <script>
-        const blocksKey = 'pageBuilderBlocks'; // Clé pour localStorage
+        const blocksKey = 'pageBuilderBlocks';
         let blocks = [];
         let currentEditingIndex = null;
         let draggedIndex = null;
-        let categoriesVisible = true; // État des catégories
+        let categoriesVisible = true;
 
-        // Initialisation de l'éditeur Ace
         const editor = ace.edit("ace-editor");
-        editor.setTheme("ace/theme/github"); // Changement du thème à GitHub
+        editor.setTheme("ace/theme/github");
         editor.session.setMode("ace/mode/javascript");
         editor.setOptions({
             fontSize: "14px",
             showPrintMargin: false
         });
         
-        // Surveillence de données
         class StorageViewer {
             constructor(containerId) {
                 this.container = document.getElementById(containerId);
@@ -444,7 +710,6 @@
                 this.displayLocalStorage();
                 this.displayCookies();
             }
-            
             
             async displayIndexedDB() {
                 const idbContent = this.container.querySelector('#idb-content');
@@ -556,7 +821,6 @@
             }
         }
 
-        // Fonction pour échapper les caractères spéciaux en HTML
         function escapeHtml(text) {
             const map = {
                 '&': '&amp;',
@@ -568,7 +832,6 @@
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
-        // Charger les blocs depuis localStorage au chargement de la page
         window.onload = function() {
             const savedBlocks = localStorage.getItem(blocksKey);
             if (savedBlocks) {
@@ -581,39 +844,36 @@
             }
             renderBlocks();
             updateTables();
-            updatePreview(); // Mettre à jour l'aperçu au chargement
-            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+            updatePreview();
+            toggleResetButton();
+            togglePreview();
         };
 
-        // Sauvegarder les blocs dans localStorage
         function saveBlocks() {
             localStorage.setItem(blocksKey, JSON.stringify(blocks));
         }
 
-        // Ajouter un nouveau bloc
         function addBlock(type) {
             const block = {
                 type,
-                title: '', // Nom du bloc (facultatif)
+                title: '',
                 content: getDefaultContent(type),
                 isCustom: type === 'Custom',
-                category: type === 'Custom' ? null : null // Catégorie par défaut pour les Custom Blocks est null
+                category: type === 'Custom' ? null : null
             };
             blocks.push(block);
             renderBlocks();
             updateTables();
             saveBlocks();
-            updatePreview(); // Mettre à jour l'aperçu après l'ajout
-            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+            updatePreview();
+            toggleResetButton();
+            togglePreview();
         }
 
-        // Obtenir le contenu par défaut en fonction du type
         function getDefaultContent(type) {
             const defaults = {
                 'HTML DOCTYPE': '<!DOCTYPE html>',
-                'HTML Lang': '<html lang="en" />', // Valeur par défaut pour Lang
+                'HTML Lang': '<html lang="en">',
                 'HTML Title': '<title>My Page</title>',
                 'HTML Meta': '<meta charset="UTF-8">',
                 'HTML Header': '<header>Header Content</header>',
@@ -667,14 +927,13 @@
             return defaults[type] || '';
         }
 
-        // Rendre les blocs dans le builder
         function renderBlocks() {
             const blocksDiv = document.getElementById('blocks');
             blocksDiv.innerHTML = '';
             blocks.forEach((block, index) => {
                 const div = document.createElement('div');
                 div.className = 'block' + (block.isCustom ? ' custom-block' : '');
-                div.id = `block-${index}`; // Assignation d'un ID unique
+                div.id = `block-${index}`;
                 div.draggable = true;
                 div.ondragstart = (e) => dragStart(e, index, div);
                 div.ondragenter = (e) => dragEnter(e, index);
@@ -690,7 +949,6 @@
             });
         }
 
-        // Mettre à jour les tableaux de prévisualisation
         function updateTables() {
             const htmlBlocks = [];
             const cssBlocks = [];
@@ -698,7 +956,6 @@
             blocks.forEach((block, index) => {
                 let displayTitle = block.title || block.type;
                 if (block.isCustom) {
-                    // Pour les Custom Blocks, inclure la catégorie si définie
                     displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
                 }
                 if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
@@ -716,7 +973,6 @@
             populateTable('jsTable', jsBlocks);
         }
 
-        // Remplir un tableau avec des données
         function populateTable(tableId, data) {
             const tbody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
@@ -726,14 +982,13 @@
                 cell.className = 'preview-content';
                 cell.textContent = item.title;
                 cell.onclick = () => {
-                    highlightBlock(item.index); // Mettre en surbrillance le bloc à gauche
+                    highlightBlock(item.index);
                 };
                 row.appendChild(cell);
                 tbody.appendChild(row);
             });
         }
 
-        // Mettre à jour l'aperçu de index.html
         function updatePreview() {
             const generatedHTML = generateHTML();
             const iframe = document.getElementById('generated-preview');
@@ -746,10 +1001,8 @@
             }
         }
 
-        // Générer le contenu HTML
         function generateHTML() {
             let html = '';
-            // Extraire les blocs DOCTYPE et Lang
             let doctype = '<!DOCTYPE html>';
             let lang = '<html lang="en">';
             const doctypeBlocks = blocks.filter(block => block.type === 'HTML DOCTYPE');
@@ -764,19 +1017,14 @@
             html += `${lang}\n`;
             html += `<head>\n`;
         
-            // Parcourir les blocs pour le head (HTML, CSS, JS)
             blocks.forEach(block => {
                 if (block.type === 'HTML DOCTYPE' || block.type === 'HTML Lang') {
-                    // DOCTYPE et Lang sont gérés séparément
                     return;
                 }
-                
                 else if (block.type.startsWith('CSS ')) {
                     html += `<style>\n${block.content}\n</style>\n`;
                 } 
-                
                 else if (block.type === 'JS CDN') {
-                    // Ajouter les CDN dans le head
                     html += `${block.content}\n`;
                 }
             });
@@ -784,10 +1032,8 @@
             html += `</head>\n`;
             html += `<body>\n`;
         
-            // Parcourir les blocs pour le contenu du body (HTML)
             blocks.forEach(block => {
                 if (block.type.startsWith('HTML ')) {
-                    // Exclure DOCTYPE et Lang qui sont dans head
                     if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
                     html += `${block.content}\n`;
                 }
@@ -798,14 +1044,11 @@
             return html;
         }
 
-        // Mettre en surbrillance un bloc spécifique
         function highlightBlock(index) {
             const blocksDiv = document.getElementById('blocks');
-            // Retirer la classe highlight de tous les blocs
             Array.from(blocksDiv.children).forEach(child => {
                 child.classList.remove('highlight');
             });
-            // Ajouter la classe highlight au bloc sélectionné
             const selectedBlock = document.getElementById(`block-${index}`);
             if (selectedBlock) {
                 selectedBlock.classList.add('highlight');
@@ -813,7 +1056,6 @@
             }
         }
 
-        // Ouvrir le popup d'édition pour un bloc spécifique
         function openEditor(index) {
             currentEditingIndex = index;
             const block = blocks[index];
@@ -826,15 +1068,12 @@
             }
             editor.session.setValue(block.content.startsWith('<') ? block.content : block.content);
             
-            // Afficher ou masquer le groupe de catégories en fonction du type du bloc
             const categoryGroup = document.getElementById('category-group');
             if (block.isCustom) {
                 categoryGroup.style.display = 'block';
-                // Cocher la catégorie actuelle si définie, sinon laisser aucune sélection
                 if (block.category) {
                     document.querySelector(`input[name="category"][value="${block.category}"]`).checked = true;
                 } else {
-                    // Aucun bouton radio sélectionné par défaut si catégorie est null
                     document.querySelectorAll('input[name="category"]').forEach(radio => radio.checked = false);
                 }
             } else {
@@ -843,27 +1082,22 @@
             
             document.getElementById('editor-modal').style.display = 'flex';
             
-            // Utiliser requestAnimationFrame pour s'assurer que le DOM est rendu
             requestAnimationFrame(() => {
-                editor.resize(); // Ajuster la taille de l'éditeur Ace après l'affichage
+                editor.resize();
             });
         }
 
-        // Fermer le popup d'édition
         function closeEditor() {
             document.getElementById('editor-modal').style.display = 'none';
         }
 
-        // Sauvegarder le contenu édité dans le bloc
         function saveContent() {
             if (currentEditingIndex !== null) {
                 const newContent = document.getElementById('block-name').value.trim();
                 const block = blocks[currentEditingIndex];
                 if (block.type === 'HTML Lang') {
-                    // Pour Lang, le contenu est directement l'attribut lang
-                    blocks[currentEditingIndex].content = newContent || 'en'; // Utilisez 'en' si vide
+                    blocks[currentEditingIndex].content = newContent || 'en';
                 } else {
-                    // Si le nom est vide, utiliser le type comme nom par défaut
                     const finalTitle = newContent !== '' ? newContent : block.type;
                     blocks[currentEditingIndex].title = finalTitle;
                     blocks[currentEditingIndex].content = editor.session.getValue();
@@ -875,21 +1109,19 @@
                 renderBlocks();
                 updateTables();
                 saveBlocks();
-                updatePreview(); // Mettre à jour l'aperçu après la sauvegarde
-                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+                updatePreview();
+                toggleResetButton();
+                togglePreview();
                 closeEditor();
             }
         }
 
-        // Fonction appelée au démarrage du drag
         function dragStart(e, index, element) {
             draggedIndex = index;
-            element.style.opacity = 0.5; // Rendre l'élément quasi transparent
+            element.style.opacity = 0.5;
             e.dataTransfer.effectAllowed = 'move';
         }
 
-        // Fonction appelée lors de l'entrée dans un autre bloc pendant le drag
         function dragEnter(e, index) {
             const blocksDiv = document.getElementById('blocks');
             let indicator = document.querySelector('.drop-indicator');
@@ -910,13 +1142,11 @@
             indicator.style.display = 'block';
         }
 
-        // Fonction appelée lorsque le drag quitte un bloc
         function dragLeave(e) {
             const indicator = document.querySelector('.drop-indicator');
             if (indicator) indicator.style.display = 'none';
         }
 
-        // Fonction appelée lors du drop d'un bloc
         function drop(e, dropIndex, element) {
             e.preventDefault();
             const indicator = document.querySelector('.drop-indicator');
@@ -927,28 +1157,25 @@
             renderBlocks();
             updateTables();
             saveBlocks();
-            updatePreview(); // Mettre à jour l'aperçu après le drop
-            toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-            togglePreview(); // Mettre à jour la visibilité de l'aperçu
+            updatePreview();
+            toggleResetButton();
+            togglePreview();
         }
 
-        // Supprimer un bloc
         function removeBlock(index) {
             if (confirm("Voulez-vous vraiment supprimer ce bloc ?")) {
                 blocks.splice(index, 1);
                 renderBlocks();
                 updateTables();
                 saveBlocks();
-                updatePreview(); // Mettre à jour l'aperçu après la suppression
-                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+                updatePreview();
+                toggleResetButton();
+                togglePreview();
             }
         }
 
-        // Télécharger la page HTML générée
         function downloadPage() {
             let html = '';
-            // Générer le HTML
             html = generateHTML();
 
             const blob = new Blob([html], { type: 'text/html' });
@@ -957,23 +1184,21 @@
             link.download = 'index.html';
             link.click();
 
-            updatePreview(); // Mettre à jour l'aperçu après le téléchargement
+            updatePreview();
         }
 
-        // Fonction pour réinitialiser tous les blocs
         function resetBlocks() {
             if (confirm("Êtes-vous sûr de vouloir réinitialiser tous les composants ? Cette action est irréversible.")) {
                 blocks = [];
                 renderBlocks();
                 updateTables();
                 saveBlocks();
-                updatePreview(); // Mettre à jour l'aperçu après la réinitialisation
-                toggleResetButton(); // Mettre à jour la visibilité du bouton Reset
-                togglePreview(); // Mettre à jour la visibilité de l'aperçu
+                updatePreview();
+                toggleResetButton();
+                togglePreview();
             }
         }
 
-        // Fonction pour basculer la visibilité du bouton Reset
         function toggleResetButton() {
             const resetBtn = document.getElementById('reset-btn');
             if (blocks.length > 1) {
@@ -983,7 +1208,6 @@
             }
         }
 
-        // Fonction pour basculer la visibilité de l'aperçu
         function togglePreview() {
             const iframe = document.getElementById('generated-preview');
             if (blocks.length > 0) {
@@ -993,7 +1217,6 @@
             }
         }
 
-        // Fonction pour basculer la visibilité des catégories et de leurs boutons
         function toggleCategories() {
             categoriesVisible = !categoriesVisible;
             document.getElementById('html-group').style.display = categoriesVisible ? 'block' : 'none';
@@ -1002,433 +1225,421 @@
             document.getElementById('cs-group').style.display = categoriesVisible ? 'block' : 'none';
         }
         
+        class StorageExplorer {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) {
+                    throw new Error('Container element not found');
+                }
+                
+                this.init();
+                this.addStyles();
+            }
         
- class StorageExplorer {
-    constructor(containerId) {
-        this.container = document.getElementById(containerId);
-        if (!this.container) {
-            throw new Error('Container element not found');
-        }
-        
-        this.init();
-        this.addStyles();
-    }
-
-    async init() {
-        // Structure principale
-        this.container.innerHTML = `
-            <div class="storage-kpis">
-                <div class="kpi-card" data-type="indexeddb">
-                    <h3>IndexedDB</h3>
-                    <div class="kpi-value">...</div>
-                    <div class="kpi-label">Bases de données</div>
-                </div>
-                <div class="kpi-card" data-type="localstorage">
-                    <h3>localStorage</h3>
-                    <div class="kpi-value">...</div>
-                    <div class="kpi-label">Entrées</div>
-                </div>
-                <div class="kpi-card" data-type="cookies">
-                    <h3>Cookies</h3>
-                    <div class="kpi-value">...</div>
-                    <div class="kpi-label">Cookies actifs</div>
-                </div>
-            </div>
-
-            <div class="storage-modal" id="storageModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Explorateur de stockage</h2>
-                        <button class="close-btn">&times;</button>
+            async init() {
+                this.container.innerHTML = `
+                    <div class="storage-kpis">
+                        <div class="kpi-card" data-type="indexeddb">
+                            <h3>IndexedDB</h3>
+                            <div class="kpi-value">...</div>
+                            <div class="kpi-label">Bases de données</div>
+                        </div>
+                        <div class="kpi-card" data-type="localstorage">
+                            <h3>localStorage</h3>
+                            <div class="kpi-value">...</div>
+                            <div class="kpi-label">Entrées</div>
+                        </div>
+                        <div class="kpi-card" data-type="cookies">
+                            <h3>Cookies</h3>
+                            <div class="kpi-value">...</div>
+                            <div class="kpi-label">Cookies actifs</div>
+                        </div>
                     </div>
-                    <div class="modal-nav">
-                        <button class="nav-btn active" data-view="indexeddb">IndexedDB</button>
-                        <button class="nav-btn" data-view="localstorage">localStorage</button>
-                        <button class="nav-btn" data-view="cookies">Cookies</button>
-                    </div>
-                    <div class="modal-body"></div>
-                </div>
-            </div>
-        `;
 
-        // Initialiser les événements
-        this.initializeEvents();
-        
-        // Charger les données initiales
-        await this.refreshKPIs();
-    }
-
-    addStyles() {
-        const styles = `
-            .storage-kpis {
-                display: flex;
-                gap: 20px;
-                flex-wrap: wrap;
-            }
-
-            .kpi-card {
-                flex: 1;
-                min-width: 200px;
-                padding: 20px;
-                background: white;
-                border-radius: 10px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                cursor: pointer;
-                transition: transform 0.2s;
-            }
-
-            .kpi-card:hover {
-                transform: translateY(-2px);
-            }
-
-            .kpi-card h3 {
-                margin: 0;
-                color: #333;
-                font-size: 16px;
-            }
-
-            .kpi-value {
-                font-size: 28px;
-                font-weight: bold;
-                margin: 10px 0;
-                color: #2196F3;
-            }
-
-            .kpi-label {
-                color: #666;
-                font-size: 14px;
-            }
-
-            .storage-modal {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 1000;
-            }
-
-            .modal-content {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                width: 90%;
-                max-width: 800px;
-                max-height: 90vh;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .modal-header {
-                padding: 20px;
-                border-bottom: 1px solid #eee;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .modal-header h2 {
-                margin: 0;
-                font-size: 20px;
-            }
-
-            .close-btn {
-                background: none;
-                border: none;
-                font-size: 24px;
-                cursor: pointer;
-                color: #666;
-            }
-
-            .modal-nav {
-                display: flex;
-                gap: 10px;
-                padding: 10px 20px;
-                border-bottom: 1px solid #eee;
-                overflow-x: auto;
-            }
-
-            .nav-btn {
-                padding: 8px 16px;
-                border: none;
-                background: none;
-                cursor: pointer;
-                border-radius: 20px;
-                white-space: nowrap;
-            }
-
-            .nav-btn.active {
-                background: #2196F3;
-                color: white;
-            }
-
-            .modal-body {
-                padding: 20px;
-                overflow-y: auto;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            th, td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #eee;
-            }
-
-            th {
-                background: #f5f5f5;
-                font-weight: bold;
-            }
-
-            @media (max-width: 600px) {
-                .kpi-card {
-                    min-width: 100%;
-                }
-                
-                .modal-content {
-                    width: 100%;
-                    height: 100%;
-                    max-height: 100vh;
-                    border-radius: 0;
-                }
-                
-                .modal-body {
-                    padding: 10px;
-                }
-                
-                th, td {
-                    padding: 8px;
-                }
-            }
-        `;
-
-        const styleElement = document.createElement('style');
-        styleElement.textContent = styles;
-        document.head.appendChild(styleElement);
-    }
-
-    initializeEvents() {
-        // Événements pour les cartes KPI
-        this.container.querySelectorAll('.kpi-card').forEach(card => {
-            card.addEventListener('click', () => {
-                this.openModal(card.dataset.type);
-            });
-        });
-
-        // Événements pour le modal
-        const modal = this.container.querySelector('#storageModal');
-        modal.querySelector('.close-btn').addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        modal.querySelector('.modal-nav').addEventListener('click', (e) => {
-            if (e.target.classList.contains('nav-btn')) {
-                this.showView(e.target.dataset.view);
-                modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-            }
-        });
-
-        // Fermer le modal en cliquant en dehors
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
-
-    async refreshKPIs() {
-        // IndexedDB KPI
-        const databases = await window.indexedDB.databases();
-        this.updateKPIValue('indexeddb', databases.length);
-
-        // localStorage KPI
-        const lsCount = Object.keys(localStorage).length;
-        this.updateKPIValue('localstorage', lsCount);
-
-        // Cookies KPI
-        const cookiesCount = document.cookie.split(';').filter(cookie => cookie.trim()).length;
-        this.updateKPIValue('cookies', cookiesCount);
-    }
-
-    updateKPIValue(type, value) {
-        const kpiCard = this.container.querySelector(`[data-type="${type}"] .kpi-value`);
-        if (kpiCard) {
-            kpiCard.textContent = value;
-        }
-    }
-
-    async openModal(type) {
-        const modal = this.container.querySelector('#storageModal');
-        modal.style.display = 'block';
-        
-        // Activer le bon onglet
-        modal.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.view === type);
-        });
-
-        await this.showView(type);
-    }
-
-    async showView(type) {
-        const modalBody = this.container.querySelector('.modal-body');
-        modalBody.innerHTML = 'Chargement...';
-
-        switch (type) {
-            case 'indexeddb':
-                await this.showIndexedDBView(modalBody);
-                break;
-            case 'localstorage':
-                this.showLocalStorageView(modalBody);
-                break;
-            case 'cookies':
-                this.showCookiesView(modalBody);
-                break;
-        }
-    }
-
-    async showIndexedDBView(container) {
-        try {
-            const databases = await window.indexedDB.databases();
-            if (databases.length === 0) {
-                container.innerHTML = 'Aucune base IndexedDB trouvée';
-                return;
-            }
-
-            let html = '<div class="idb-explorer">';
-            for (const db of databases) {
-                const content = await this.getIndexedDBContent(db.name);
-                html += `
-                    <div class="db-section">
-                        <h3>${db.name}</h3>
-                        ${this.formatObjectStores(content)}
+                    <div class="storage-modal" id="storageModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Explorateur de stockage</h2>
+                                <button class="close-btn">&times;</button>
+                            </div>
+                            <div class="modal-nav">
+                                <button class="nav-btn active" data-view="indexeddb">IndexedDB</button>
+                                <button class="nav-btn" data-view="localstorage">localStorage</button>
+                                <button class="nav-btn" data-view="cookies">Cookies</button>
+                            </div>
+                            <div class="modal-body"></div>
+                        </div>
                     </div>
                 `;
+        
+                this.initializeEvents();
+                await this.refreshKPIs();
             }
-            html += '</div>';
-            container.innerHTML = html;
-        } catch (error) {
-            container.innerHTML = `Erreur: ${error.message}`;
-        }
-    }
+        
+            addStyles() {
+                const styles = `
+                    .storage-kpis {
+                        display: flex;
+                        gap: 20px;
+                        flex-wrap: wrap;
+                    }
 
-    formatObjectStores(content) {
-        let html = '';
-        for (const [storeName, items] of Object.entries(content)) {
-            html += `
-                <div class="store-section">
-                    <h4>${storeName}</h4>
+                    .kpi-card {
+                        flex: 1;
+                        min-width: 200px;
+                        padding: 20px;
+                        background: white;
+                        border-radius: 10px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        cursor: pointer;
+                        transition: transform 0.2s;
+                    }
+
+                    .kpi-card:hover {
+                        transform: translateY(-2px);
+                    }
+
+                    .kpi-card h3 {
+                        margin: 0;
+                        color: #333;
+                        font-size: 16px;
+                    }
+
+                    .kpi-value {
+                        font-size: 28px;
+                        font-weight: bold;
+                        margin: 10px 0;
+                        color: #2196F3;
+                    }
+
+                    .kpi-label {
+                        color: #666;
+                        font-size: 14px;
+                    }
+
+                    .storage-modal {
+                        display: none;
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 1000;
+                    }
+
+                    .modal-content {
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        width: 90%;
+                        max-width: 800px;
+                        max-height: 90vh;
+                        border-radius: 10px;
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .modal-header {
+                        padding: 20px;
+                        border-bottom: 1px solid #eee;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+
+                    .modal-header h2 {
+                        margin: 0;
+                        font-size: 20px;
+                    }
+
+                    .close-btn {
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        cursor: pointer;
+                        color: #666;
+                    }
+
+                    .modal-nav {
+                        display: flex;
+                        gap: 10px;
+                        padding: 10px 20px;
+                        border-bottom: 1px solid #eee;
+                        overflow-x: auto;
+                    }
+
+                    .nav-btn {
+                        padding: 8px 16px;
+                        border: none;
+                        background: none;
+                        cursor: pointer;
+                        border-radius: 20px;
+                        white-space: nowrap;
+                    }
+
+                    .nav-btn.active {
+                        background: #2196F3;
+                        color: white;
+                    }
+
+                    .modal-body {
+                        padding: 20px;
+                        overflow-y: auto;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+
+                    th, td {
+                        padding: 12px;
+                        text-align: left;
+                        border-bottom: 1px solid #eee;
+                    }
+
+                    th {
+                        background: #f5f5f5;
+                        font-weight: bold;
+                    }
+
+                    @media (max-width: 600px) {
+                        .kpi-card {
+                            min-width: 100%;
+                        }
+                        
+                        .modal-content {
+                            width: 100%;
+                            height: 100%;
+                            max-height: 100vh;
+                            border-radius: 0;
+                        }
+                        
+                        .modal-body {
+                            padding: 10px;
+                        }
+                        
+                        th, td {
+                            padding: 8px;
+                        }
+                    }
+                `;
+        
+                const styleElement = document.createElement('style');
+                styleElement.textContent = styles;
+                document.head.appendChild(styleElement);
+            }
+        
+            initializeEvents() {
+                this.container.querySelectorAll('.kpi-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        this.openModal(card.dataset.type);
+                    });
+                });
+        
+                const modal = this.container.querySelector('#storageModal');
+                modal.querySelector('.close-btn').addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+        
+                modal.querySelector('.modal-nav').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('nav-btn')) {
+                        this.showView(e.target.dataset.view);
+                        modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                    }
+                });
+        
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            }
+        
+            async refreshKPIs() {
+                const databases = await window.indexedDB.databases();
+                this.updateKPIValue('indexeddb', databases.length);
+        
+                const lsCount = Object.keys(localStorage).length;
+                this.updateKPIValue('localstorage', lsCount);
+        
+                const cookiesCount = document.cookie.split(';').filter(cookie => cookie.trim()).length;
+                this.updateKPIValue('cookies', cookiesCount);
+            }
+        
+            updateKPIValue(type, value) {
+                const kpiCard = this.container.querySelector(`[data-type="${type}"] .kpi-value`);
+                if (kpiCard) {
+                    kpiCard.textContent = value;
+                }
+            }
+        
+            async openModal(type) {
+                const modal = this.container.querySelector('#storageModal');
+                modal.style.display = 'block';
+                
+                modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === type));
+        
+                await this.showView(type);
+            }
+        
+            async showView(type) {
+                const modalBody = this.container.querySelector('.modal-body');
+                modalBody.innerHTML = 'Chargement...';
+        
+                switch (type) {
+                    case 'indexeddb':
+                        await this.showIndexedDBView(modalBody);
+                        break;
+                    case 'localstorage':
+                        this.showLocalStorageView(modalBody);
+                        break;
+                    case 'cookies':
+                        this.showCookiesView(modalBody);
+                        break;
+                }
+            }
+        
+            async showIndexedDBView(container) {
+                try {
+                    const databases = await window.indexedDB.databases();
+                    if (databases.length === 0) {
+                        container.innerHTML = 'Aucune base IndexedDB trouvée';
+                        return;
+                    }
+        
+                    let html = '<div class="idb-explorer">';
+                    for (const db of databases) {
+                        const content = await this.getIndexedDBContent(db.name);
+                        html += `
+                            <div class="db-section">
+                                <h3>${db.name}</h3>
+                                ${this.formatObjectStores(content)}
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                    container.innerHTML = html;
+                } catch (error) {
+                    container.innerHTML = `Erreur: ${error.message}`;
+                }
+            }
+        
+            formatObjectStores(content) {
+                let html = '';
+                for (const [storeName, items] of Object.entries(content)) {
+                    html += `
+                        <div class="store-section">
+                            <h4>${storeName}</h4>
+                            <table>
+                                <tr>
+                                    <th>Clé</th>
+                                    <th>Valeur</th>
+                                </tr>
+                                ${items.map(item => `
+                                    <tr>
+                                        <td>${item.key}</td>
+                                        <td><pre>${JSON.stringify(item.value, null, 2)}</pre></td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                        </div>
+                    `;
+                }
+                return html;
+            }
+        
+            showLocalStorageView(container) {
+                const items = Object.entries(localStorage);
+                if (items.length === 0) {
+                    container.innerHTML = 'localStorage est vide';
+                    return;
+                }
+        
+                container.innerHTML = `
                     <table>
                         <tr>
                             <th>Clé</th>
                             <th>Valeur</th>
                         </tr>
-                        ${items.map(item => `
+                        ${items.map(([key, value]) => `
                             <tr>
-                                <td>${item.key}</td>
-                                <td><pre>${JSON.stringify(item.value, null, 2)}</pre></td>
+                                <td>${key}</td>
+                                <td><pre>${value}</pre></td>
                             </tr>
                         `).join('')}
                     </table>
-                </div>
-            `;
-        }
-        return html;
-    }
-
-    showLocalStorageView(container) {
-        const items = Object.entries(localStorage);
-        if (items.length === 0) {
-            container.innerHTML = 'localStorage est vide';
-            return;
-        }
-
-        container.innerHTML = `
-            <table>
-                <tr>
-                    <th>Clé</th>
-                    <th>Valeur</th>
-                </tr>
-                ${items.map(([key, value]) => `
-                    <tr>
-                        <td>${key}</td>
-                        <td><pre>${value}</pre></td>
-                    </tr>
-                `).join('')}
-            </table>
-        `;
-    }
-
-    showCookiesView(container) {
-        const cookies = document.cookie.split(';')
-            .map(cookie => {
-                const [key, value] = cookie.trim().split('=');
-                return { key, value };
-            })
-            .filter(cookie => cookie.key);
-
-        if (cookies.length === 0) {
-            container.innerHTML = 'Aucun cookie trouvé';
-            return;
-        }
-
-        container.innerHTML = `
-            <table>
-                <tr>
-                    <th>Nom</th>
-                    <th>Valeur</th>
-                </tr>
-                ${cookies.map(cookie => `
-                    <tr>
-                        <td>${cookie.key}</td>
-                        <td>${cookie.value}</td>
-                    </tr>
-                `).join('')}
-            </table>
-        `;
-    }
-
-    async getIndexedDBContent(dbName) {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName);
-            const content = {};
-
-            request.onerror = () => reject(request.error);
-            request.onsuccess = async (event) => {
-                const db = event.target.result;
-                const objectStoreNames = Array.from(db.objectStoreNames);
-                
-                for (const storeName of objectStoreNames) {
-                    const transaction = db.transaction(storeName, 'readonly');
-                    const store = transaction.objectStore(storeName);
-                    content[storeName] = await new Promise((resolve) => {
-                        const items = [];
-                        store.openCursor().onsuccess = (event) => {
-                            const cursor = event.target.result;
-                            if (cursor) {
-                                items.push({ key: cursor.key, value: cursor.value });
-                                cursor.continue();
-                            } else {
-                                resolve(items);
-                            }
-                        };
-                    });
+                `;
+            }
+        
+            showCookiesView(container) {
+                const cookies = document.cookie.split(';')
+                    .map(cookie => {
+                        const [key, value] = cookie.trim().split('=');
+                        return { key, value };
+                    })
+                    .filter(cookie => cookie.key);
+        
+                if (cookies.length === 0) {
+                    container.innerHTML = 'Aucun cookie trouvé';
+                    return;
                 }
-                resolve(content);
-                db.close();
-            };
-        });
-    }
-}       
-const explorer = new StorageExplorer('storage-explorer');
+        
+                container.innerHTML = `
+                    <table>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Valeur</th>
+                        </tr>
+                        ${cookies.map(cookie => `
+                            <tr>
+                                <td>${cookie.key}</td>
+                                <td>${cookie.value}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+            }
+        
+            async getIndexedDBContent(dbName) {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(dbName);
+                    const content = {};
+        
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = async (event) => {
+                        const db = event.target.result;
+                        const objectStoreNames = Array.from(db.objectStoreNames);
+                        
+                        for (const storeName of objectStoreNames) {
+                            const transaction = db.transaction(storeName, 'readonly');
+                            const store = transaction.objectStore(storeName);
+                            content[storeName] = await new Promise((resolve) => {
+                                const items = [];
+                                store.openCursor().onsuccess = (event) => {
+                                    const cursor = event.target.result;
+                                    if (cursor) {
+                                        items.push({ key: cursor.key, value: cursor.value });
+                                        cursor.continue();
+                                    } else {
+                                        resolve(items);
+                                    }
+                                };
+                            });
+                        }
+                        resolve(content);
+                        db.close();
+                    };
+                });
+            }
+        }
+
+        const explorer = new StorageExplorer('storage-explorer');
+
     </script>
 </body>
 </html>
