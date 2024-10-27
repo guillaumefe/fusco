@@ -294,7 +294,7 @@
         <!-- Group JS Buttons -->
         <div class="button-group" id="js-group">
             <h3>JavaScript</h3>
-            <button class="btn-html" onclick="addBlock('HTML Script')">Script</button>
+            <button class="btn-html" onclick="addBlock('JS Script')">Script</button>
             <button class="btn-js" onclick="addBlock('JS Constant')">Constant</button>
             <button class="btn-js" onclick="addBlock('JS Variable')">Variable</button>
             <button class="btn-js" onclick="addBlock('JS Function')">Function</button>
@@ -616,7 +616,6 @@
                 'HTML Lang': '<html lang="en" />', // Valeur par défaut pour Lang
                 'HTML Title': '<title>My Page</title>',
                 'HTML Meta': '<meta charset="UTF-8">',
-                'HTML Script': '<!-- <script>console.log("Script component loaded");<\/script> -->\n<script src="https://MYCDN.com"><\/script>',
                 'HTML Header': '<header>Header Content</header>',
                 'HTML Footer': '<footer>Footer Content</footer>',
                 'HTML Nav': '<nav>Navigation Links</nav>',
@@ -651,6 +650,7 @@
                 'CSS Import': '@import url("styles.css");',
                 'CSS Box Model': 'div { padding: 10px; margin: 5px; border: 1px solid #000; }',
                 'CSS Position': 'position: absolute; top: 50px; left: 100px;',
+                'JS Script': '<!-- <script>console.log("Script component loaded");<\/script> -->\n<script src="https://MYCDN.com"><\/script>',
                 'JS Constant': 'const myConstant = "Hello World";',
                 'JS Variable': 'let myVariable = 10;',
                 'JS Function': 'function myFunction() { return true; }',
@@ -701,13 +701,13 @@
                     // Pour les Custom Blocks, inclure la catégorie si définie
                     displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
                 }
-                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Script', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
+                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
                     htmlBlocks.push({ title: displayTitle, index });
                 }
                 if (['CSS Class', 'CSS ID', 'CSS Selector', 'CSS Variable', 'CSS Flexbox', 'CSS Grid', 'CSS Media Query', 'CSS Pseudo-class', 'CSS Pseudo-element', 'CSS Animation', 'CSS Transition', 'CSS Import', 'CSS Box Model', 'CSS Position'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
                     cssBlocks.push({ title: displayTitle, index });
                 }
-                if (['JS Constant', 'JS Variable', 'JS Function', 'JS Class', 'JS Module', 'JS Event Listener', 'JS DOM Manipulation', 'JS Fetch API', 'JS Async Function', 'JS Promise', 'JS Arrow Function', 'JS Array Methods'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
+                if (['JS Script', 'JS Constant', 'JS Variable', 'JS Function', 'JS Class', 'JS Module', 'JS Event Listener', 'JS DOM Manipulation', 'JS Fetch API', 'JS Async Function', 'JS Promise', 'JS Arrow Function', 'JS Array Methods'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
                     jsBlocks.push({ title: displayTitle, index });
                 }
             });
@@ -770,9 +770,9 @@
                     // DOCTYPE et Lang sont gérés séparément
                     return;
                 }
-                if (block.type === 'HTML Script') {
-                    // Ajouter les scripts HTML dans le head
-                    html += `${block.content}\n`;
+                if (block.type === 'JS Script') {
+                    // Ajouter les scripts JS dans le head
+                    js += `${block.content}\n`;
                 } else if (block.type.startsWith('CSS ')) {
                     html += `<style>\n${block.content}\n</style>\n`;
                 } else if (block.type === 'JS CDN') {
@@ -786,7 +786,7 @@
         
             // Parcourir les blocs pour le contenu du body (HTML)
             blocks.forEach(block => {
-                if (block.type.startsWith('HTML ') && block.type !== 'HTML Script') {
+                if (block.type.startsWith('HTML ')) {
                     // Exclure DOCTYPE et Lang qui sont dans head
                     if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
                     html += `${block.content}\n`;
