@@ -770,9 +770,9 @@
                     // DOCTYPE et Lang sont gérés séparément
                     return;
                 }
-                if (block.type === 'JS Script') {
+                if (block.type === 'HTML CDN') { //TODO
                     // Ajouter les scripts JS dans le head
-                    js += `${block.content}\n`;
+                    html += `${block.content}\n`;
                 } else if (block.type.startsWith('CSS ')) {
                     html += `<style>\n${block.content}\n</style>\n`;
                 } else if (block.type === 'JS CDN') {
