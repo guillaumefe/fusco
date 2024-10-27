@@ -241,12 +241,13 @@
 
         #generated-preview {
             margin-top: 20px;
-            border: 1px solid #ccc;
+            border: 4px solid #ccc;
             border-radius: 5px;
-            height: 400px;
+            height: 500px;
             width: 100%;
             display: none;
             transition: opacity 0.3s ease;
+            margin-bottom: 20px;
         }
 
 .markdown-content pre, .markdown-content code {
@@ -311,6 +312,9 @@
     }
 }
 
+#backend-details {
+    margin-top:15px;
+}
 
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
@@ -1599,7 +1603,7 @@ async function generateBackend() {
         })
         : JSON.stringify({
             model,
-            messages: [{ role: "user", content: "Générez les fichiers backend nécessaires au fonctionnement de mon application, ainsi qu'un Dockerfile et un fichier app-info.json. Pour chaque composant, montrez le code sans omission ni commentaire." }],
+            messages: [{ role: "user", content: generateHTML() + " " + "Générez les fichiers backend nécessaires au fonctionnement de mon application, ainsi qu'un Dockerfile et un fichier app-info.json. Pour chaque composant, montrez le code sans omission ni commentaire." }],
             max_tokens: 1000
         });
 
@@ -1668,7 +1672,6 @@ async function loadApiKeyOnStartup() {
                 if (decryptedApiKey) {
                     apiKeyInput.value = "••••••••";
                     apiKey = decryptedApiKey; // Stockage temporaire de la clé déchiffrée
-                    alert("API key decrypted and loaded.");
                 }
             } catch (error) {
                 alert("Incorrect password. API key could not be loaded.");
@@ -1682,34 +1685,8 @@ async function loadApiKeyOnStartup() {
     }
 }
 
-// Fonction pour charger et déchiffrer la clé API au démarrage si elle est stockée
-async function loadApiKeyOnStartup() {
-    const encryptedApiKey = localStorage.getItem('encryptedApiKey');
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    
-    if (encryptedApiKey) {
-        const password = prompt("Entrez le mot de passe pour déchiffrer votre clé API :");
-        
-        if (password) {
-            try {
-                const decryptedApiKey = await decryptApiKey(password);
-                if (decryptedApiKey) {
-                    apiKeyInput.value = "••••••••"; // Masquer la clé dans le champ
-                    apiKey = decryptedApiKey; // Stocker temporairement la clé déchiffrée pour l'usage
-                }
-            } catch (error) {
-                console.error("Erreur lors du déchiffrement :", error);
-                alert("Mot de passe incorrect. La clé API n’a pas pu être chargée.");
-                apiKeyInput.value = ''; // Vider le champ si le mot de passe est incorrect
-            }
-        }
-    } else {
-        apiKeyInput.value = ''; // Vider le champ si aucune clé n'est stockée
-    }
-}
-
 // Appel de la fonction de chargement au démarrage
-window.onload = async function() {
+document.addEventListener("DOMContentLoaded", async function() {
     await loadApiKeyOnStartup(); // Charger et déchiffrer la clé si elle est stockée
     const savedResponse = localStorage.getItem('lastBackendResponse');
     const responseContent = document.getElementById('response-content');
@@ -1724,7 +1701,8 @@ window.onload = async function() {
     } else {
         responseContent.innerHTML = "<p>Aucun contenu sauvegardé à afficher.</p>";
     }
-};
+});
+
 
 </script>
 <script>
