@@ -1,4 +1,4 @@
-# Fusko
+# Fusco
 
 ![image](https://github.com/user-attachments/assets/0696796b-3937-4404-8f95-4b8e7d031e28)
 
