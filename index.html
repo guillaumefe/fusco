@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fusko</title>
     <style>
-        /* Styles de base */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
         body { display: flex; height: 100vh; overflow: hidden; }
         #builder, #preview { width: 50%; padding: 10px; overflow-y: auto; }
@@ -13,7 +12,6 @@
         #preview { background-color: #fff; }
         h2 { margin-bottom: 10px; font-size: 1.5rem; color: #333; }
         
-        /* Boutons de création regroupés */
         .button-group {
             margin-bottom: 10px;
         }
@@ -23,16 +21,16 @@
             color: #555;
         }
         .button-group .btn-html {
-            background-color: #337ab7; /* Bleu pour HTML */
+            background-color: #337ab7;
         }
         .button-group .btn-css {
-            background-color: #5cb85c; /* Vert pour CSS */
+            background-color: #5cb85c;
         }
         .button-group .btn-js {
-            background-color: #f0ad4e; /* Orange pour JS */
+            background-color: #f0ad4e;
         }
         .button-group .btn-custom {
-            background-color: #5f9ea0; /* Couleur actuelle pour Custom */
+            background-color: #5f9ea0;
         }
         .button-group button {
             padding: 10px;
@@ -42,10 +40,9 @@
             border: none;
             color: #fff;
             border-radius: 5px;
-            position: relative; /* Nécessaire pour les tooltips */
+            position: relative;
         }
 
-        /* Tooltip Styles */
         .button-group button::after {
             content: attr(data-tooltip);
             position: absolute;
@@ -87,7 +84,6 @@
             opacity: 1;
         }
 
-        /* Bouton Reset spécifique */
         #reset-btn { 
             background-color: #d9534f;
             width: 100%;
@@ -99,7 +95,6 @@
             padding: 10px;
         }
 
-        /* Bouton de Bascule */
         #toggle-categories-btn {
             background-color: #b8860b;
             width: 100%;
@@ -160,6 +155,7 @@
             border-radius: 5px; 
             cursor: pointer; 
             margin-top: 10px;
+            margin-bottom: 5px;
         }
         .preview-content { 
             white-space: nowrap; 
@@ -169,7 +165,6 @@
             max-width: 100%; 
         }
 
-        /* Popup Editor */
         #editor-modal {
             display: none;
             position: fixed;
@@ -214,7 +209,6 @@
         }
         #editor-footer button { margin-left: 10px; }
 
-        /* Input Field for Name and Category */
         #editor-container .input-group {
             padding: 10px;
             border-bottom: 1px solid #ccc;
@@ -237,7 +231,6 @@
             margin-right: 10px;
         }
 
-        /* Drop Indicator */
         .drop-indicator {
             position: absolute;
             height: 2px;
@@ -246,7 +239,6 @@
             z-index: 500;
         }
 
-        /* Preview Section */
         #generated-preview {
             margin-top: 20px;
             border: 1px solid #ccc;
@@ -256,8 +248,73 @@
             display: none;
             transition: opacity 0.3s ease;
         }
+
+.markdown-content pre, .markdown-content code {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    white-space: pre-wrap;  /* Forcer le texte à aller à la ligne */
+    word-break: break-word;  /* Autoriser la coupure de mots longs pour éviter le débordement */
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+}
+
+.markdown-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 100%;  /* Limiter la largeur */
+    overflow-wrap: break-word;
+}
+
+
+.markdown-content h3 {
+    font-size: 1.5em;
+    color: #0056b3;
+    margin-top: 20px;
+}
+
+.markdown-content pre {
+    font-family: 'Courier New', monospace;
+}
+
+.markdown-content code {
+    color: #d63384;
+    font-family: 'Courier New', monospace;
+}
+
+.markdown-content p {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.markdown-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.markdown-content a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .markdown-content {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+}
+
+
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div id="builder">
@@ -265,323 +322,167 @@
         <div id="storage-explorer"></div>
         <button id="toggle-categories-btn" onclick="toggleCategories()">Display/Hide categories</button>
 
-        <!-- Group HTML Buttons -->
         <div class="button-group" id="html-group">
             <h3>HTML</h3>
-            <button class="btn-html" onclick="addBlock('HTML DOCTYPE')" data-tooltip="HTML DOCTYPE:
-Définit le type de document.
-Utilisation : Placez-le au début de vos fichiers HTML.
-Apparence : Bouton étiqueté 'DOCTYPE'.">
+            <button class="btn-html" onclick="addBlock('HTML DOCTYPE')" data-tooltip="HTML DOCTYPE: Définit le type de document. Utilisation : Placez-le au début de vos fichiers HTML. Apparence : Bouton étiqueté 'DOCTYPE'.">
                 DOCTYPE
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Lang')" data-tooltip="HTML Lang:
-Spécifie la langue du document.
-Utilisation : Utilisé pour définir la langue principale de la page web.
-Apparence : Bouton étiqueté 'Lang'.">
+            <button class="btn-html" onclick="addBlock('HTML Lang')" data-tooltip="HTML Lang: Spécifie la langue du document. Utilisation : Utilisé pour définir la langue principale de la page web. Apparence : Bouton étiqueté 'Lang'.">
                 Lang
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Title')" data-tooltip="HTML Title:
-Définit le titre de la page.
-Utilisation : Placez-le dans la section &lt;head&gt; pour définir le titre affiché dans l'onglet du navigateur.
-Apparence : Bouton étiqueté 'Title'.">
+            <button class="btn-html" onclick="addBlock('HTML Title')" data-tooltip="HTML Title: Définit le titre de la page. Utilisation : Placez-le dans la section &lt;head&gt; pour définir le titre affiché dans l'onglet du navigateur. Apparence : Bouton étiqueté 'Title'.">
                 Title
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Meta')" data-tooltip="HTML Meta:
-Définit des métadonnées pour le document.
-Utilisation : Utilisé pour spécifier le jeu de caractères, la description, etc.
-Apparence : Bouton étiqueté 'Meta'.">
+            <button class="btn-html" onclick="addBlock('HTML Meta')" data-tooltip="HTML Meta: Définit des métadonnées pour le document. Utilisation : Utilisé pour spécifier le jeu de caractères, la description, etc. Apparence : Bouton étiqueté 'Meta'.">
                 Meta
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Header')" data-tooltip="HTML Header:
-Crée une section d'en-tête pour le document.
-Utilisation : Utilisé pour contenir des éléments de navigation ou des titres.
-Apparence : Bouton étiqueté 'Header'.">
+            <button class="btn-html" onclick="addBlock('HTML Header')" data-tooltip="HTML Header: Crée une section d'en-tête pour le document. Utilisation : Utilisé pour contenir des éléments de navigation ou des titres. Apparence : Bouton étiqueté 'Header'.">
                 Header
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Footer')" data-tooltip="HTML Footer:
-Crée une section de pied de page pour le document.
-Utilisation : Utilisé pour contenir des informations de copyright ou des liens de bas de page.
-Apparence : Bouton étiqueté 'Footer'.">
+            <button class="btn-html" onclick="addBlock('HTML Footer')" data-tooltip="HTML Footer: Crée une section de pied de page pour le document. Utilisation : Utilisé pour contenir des informations de copyright ou des liens de bas de page. Apparence : Bouton étiqueté 'Footer'.">
                 Footer
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Nav')" data-tooltip="HTML Nav:
-Crée une barre de navigation.
-Utilisation : Utilisé pour les liens de navigation principaux du site.
-Apparence : Bouton étiqueté 'Nav'.">
+            <button class="btn-html" onclick="addBlock('HTML Nav')" data-tooltip="HTML Nav: Crée une barre de navigation. Utilisation : Utilisé pour les liens de navigation principaux du site. Apparence : Bouton étiqueté 'Nav'.">
                 Nav
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Section')" data-tooltip="HTML Section:
-Crée une section dans le document.
-Utilisation : Utilisé pour regrouper des contenus thématiquement liés.
-Apparence : Bouton étiqueté 'Section'.">
+            <button class="btn-html" onclick="addBlock('HTML Section')" data-tooltip="HTML Section: Crée une section dans le document. Utilisation : Utilisé pour regrouper des contenus thématiquement liés. Apparence : Bouton étiqueté 'Section'.">
                 Section
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Article')" data-tooltip="HTML Article:
-Crée un article autonome.
-Utilisation : Utilisé pour les contenus indépendants comme des billets de blog.
-Apparence : Bouton étiqueté 'Article'.">
+            <button class="btn-html" onclick="addBlock('HTML Article')" data-tooltip="HTML Article: Crée un article autonome. Utilisation : Utilisé pour les contenus indépendants comme des billets de blog. Apparence : Bouton étiqueté 'Article'.">
                 Article
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Aside')" data-tooltip="HTML Aside:
-Crée une section complémentaire.
-Utilisation : Utilisé pour des contenus secondaires comme des barres latérales.
-Apparence : Bouton étiqueté 'Aside'.">
+            <button class="btn-html" onclick="addBlock('HTML Aside')" data-tooltip="HTML Aside: Crée une section complémentaire. Utilisation : Utilisé pour des contenus secondaires comme des barres latérales. Apparence : Bouton étiqueté 'Aside'.">
                 Aside
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Main')" data-tooltip="HTML Main:
-Définit le contenu principal du document.
-Utilisation : Utilisé pour encapsuler le contenu central de la page.
-Apparence : Bouton étiqueté 'Main'.">
+            <button class="btn-html" onclick="addBlock('HTML Main')" data-tooltip="HTML Main: Définit le contenu principal du document. Utilisation : Utilisé pour encapsuler le contenu central de la page. Apparence : Bouton étiqueté 'Main'.">
                 Main
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Form')" data-tooltip="HTML Form:
-Crée un formulaire.
-Utilisation : Utilisé pour collecter des données utilisateur.
-Apparence : Bouton étiqueté 'Form'.">
+            <button class="btn-html" onclick="addBlock('HTML Form')" data-tooltip="HTML Form: Crée un formulaire. Utilisation : Utilisé pour collecter des données utilisateur. Apparence : Bouton étiqueté 'Form'.">
                 Form
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Input')" data-tooltip="HTML Input:
-Crée un champ de saisie.
-Utilisation : Utilisé pour permettre aux utilisateurs de saisir des données.
-Apparence : Bouton étiqueté 'Input'.">
+            <button class="btn-html" onclick="addBlock('HTML Input')" data-tooltip="HTML Input: Crée un champ de saisie. Utilisation : Utilisé pour permettre aux utilisateurs de saisir des données. Apparence : Bouton étiqueté 'Input'.">
                 Input
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Textarea')" data-tooltip="HTML Textarea:
-Crée une zone de texte multiligne.
-Utilisation : Utilisé pour les commentaires ou les descriptions longues.
-Apparence : Bouton étiqueté 'Textarea'.">
+            <button class="btn-html" onclick="addBlock('HTML Textarea')" data-tooltip="HTML Textarea: Crée une zone de texte multiligne. Utilisation : Utilisé pour les commentaires ou les descriptions longues. Apparence : Bouton étiqueté 'Textarea'.">
                 Textarea
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Select')" data-tooltip="HTML Select:
-Crée un menu déroulant.
-Utilisation : Utilisé pour sélectionner une option parmi plusieurs.
-Apparence : Bouton étiqueté 'Select'.">
+            <button class="btn-html" onclick="addBlock('HTML Select')" data-tooltip="HTML Select: Crée un menu déroulant. Utilisation : Utilisé pour sélectionner une option parmi plusieurs. Apparence : Bouton étiqueté 'Select'.">
                 Select
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Option')" data-tooltip="HTML Option:
-Définit une option dans un menu déroulant.
-Utilisation : Utilisé à l'intérieur de &lt;select&gt; pour les différentes options disponibles.
-Apparence : Bouton étiqueté 'Option'.">
+            <button class="btn-html" onclick="addBlock('HTML Option')" data-tooltip="HTML Option: Définit une option dans un menu déroulant. Utilisation : Utilisé à l'intérieur de &lt;select&gt; pour les différentes options disponibles. Apparence : Bouton étiqueté 'Option'.">
                 Option
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Button')" data-tooltip="HTML Button:
-Crée un bouton cliquable.
-Utilisation : Utilisé pour les actions comme soumettre un formulaire ou déclencher des événements.
-Apparence : Bouton étiqueté 'Button'.">
+            <button class="btn-html" onclick="addBlock('HTML Button')" data-tooltip="HTML Button: Crée un bouton cliquable. Utilisation : Utilisé pour les actions comme soumettre un formulaire ou déclencher des événements. Apparence : Bouton étiqueté 'Button'.">
                 Button
             </button>
-            <button class="btn-html" onclick="addBlock('HTML UL')" data-tooltip="HTML UL:
-Crée une liste non ordonnée.
-Utilisation : Utilisé pour les listes à puces.
-Apparence : Bouton étiqueté 'UL'.">
+            <button class="btn-html" onclick="addBlock('HTML UL')" data-tooltip="HTML UL: Crée une liste non ordonnée. Utilisation : Utilisé pour les listes à puces. Apparence : Bouton étiqueté 'UL'.">
                 UL
             </button>
-            <button class="btn-html" onclick="addBlock('HTML OL')" data-tooltip="HTML OL:
-Crée une liste ordonnée.
-Utilisation : Utilisé pour les listes numérotées.
-Apparence : Bouton étiqueté 'OL'.">
+            <button class="btn-html" onclick="addBlock('HTML OL')" data-tooltip="HTML OL: Crée une liste ordonnée. Utilisation : Utilisé pour les listes numérotées. Apparence : Bouton étiqueté 'OL'.">
                 OL
             </button>
-            <button class="btn-html" onclick="addBlock('HTML LI')" data-tooltip="HTML LI:
-Crée un élément de liste.
-Utilisation : Utilisé à l'intérieur de &lt;ul&gt; ou &lt;ol&gt; pour les éléments individuels.
-Apparence : Bouton étiqueté 'LI'.">
+            <button class="btn-html" onclick="addBlock('HTML LI')" data-tooltip="HTML LI: Crée un élément de liste. Utilisation : Utilisé à l'intérieur de &lt;ul&gt; ou &lt;ol&gt; pour les éléments individuels. Apparence : Bouton étiqueté 'LI'.">
                 LI
             </button>
-            <button class="btn-html" onclick="addBlock('HTML Table')" data-tooltip="HTML Table:
-Crée un tableau.
-Utilisation : Utilisé pour afficher des données tabulaires.
-Apparence : Bouton étiqueté 'Table'.">
+            <button class="btn-html" onclick="addBlock('HTML Table')" data-tooltip="HTML Table: Crée un tableau. Utilisation : Utilisé pour afficher des données tabulaires. Apparence : Bouton étiqueté 'Table'.">
                 Table
             </button>
-            <button class="btn-html" onclick="addBlock('HTML TR')" data-tooltip="HTML TR:
-Crée une rangée dans un tableau.
-Utilisation : Utilisé à l'intérieur de &lt;table&gt; pour définir les rangées.
-Apparence : Bouton étiqueté 'TR'.">
+            <button class="btn-html" onclick="addBlock('HTML TR')" data-tooltip="HTML TR: Crée une rangée dans un tableau. Utilisation : Utilisé à l'intérieur de &lt;table&gt; pour définir les rangées. Apparence : Bouton étiqueté 'TR'.">
                 TR
             </button>
-            <button class="btn-html" onclick="addBlock('HTML TH')" data-tooltip="HTML TH:
-Crée une cellule d'en-tête dans un tableau.
-Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les en-têtes de colonnes.
-Apparence : Bouton étiqueté 'TH'.">
+            <button class="btn-html" onclick="addBlock('HTML TH')" data-tooltip="HTML TH: Crée une cellule d'en-tête dans un tableau. Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les en-têtes de colonnes. Apparence : Bouton étiqueté 'TH'.">
                 TH
             </button>
-            <button class="btn-html" onclick="addBlock('HTML TD')" data-tooltip="HTML TD:
-Crée une cellule de données dans un tableau.
-Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les données des colonnes.
-Apparence : Bouton étiqueté 'TD'.">
+            <button class="btn-html" onclick="addBlock('HTML TD')" data-tooltip="HTML TD: Crée une cellule de données dans un tableau. Utilisation : Utilisé à l'intérieur de &lt;tr&gt; pour définir les données des colonnes. Apparence : Bouton étiqueté 'TD'.">
                 TD
             </button>
         </div>
 
-        <!-- Group CSS Buttons -->
         <div class="button-group" id="css-group">
             <h3>CSS</h3>
-            <button class="btn-css" onclick="addBlock('CSS Class')" data-tooltip="CSS Class:
-Définit une classe CSS.
-Utilisation : Appliquez des styles réutilisables à plusieurs éléments HTML.
-Apparence : Bouton étiqueté 'Class'.">
+            <button class="btn-css" onclick="addBlock('CSS Class')" data-tooltip="CSS Class: Définit une classe CSS. Utilisation : Appliquez des styles réutilisables à plusieurs éléments HTML. Apparence : Bouton étiqueté 'Class'.">
                 Class
             </button>
-            <button class="btn-css" onclick="addBlock('CSS ID')" data-tooltip="CSS ID:
-Définit un identifiant CSS unique.
-Utilisation : Appliquez des styles à un élément HTML spécifique.
-Apparence : Bouton étiqueté 'ID'.">
+            <button class="btn-css" onclick="addBlock('CSS ID')" data-tooltip="CSS ID: Définit un identifiant CSS unique. Utilisation : Appliquez des styles à un élément HTML spécifique. Apparence : Bouton étiqueté 'ID'.">
                 ID
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Selector')" data-tooltip="CSS Selector:
-Sélectionne des éléments HTML pour appliquer des styles.
-Utilisation : Utilisé pour cibler des éléments spécifiques dans votre CSS.
-Apparence : Bouton étiqueté 'Selector'.">
+            <button class="btn-css" onclick="addBlock('CSS Selector')" data-tooltip="CSS Selector: Sélectionne des éléments HTML pour appliquer des styles. Utilisation : Utilisé pour cibler des éléments spécifiques dans votre CSS. Apparence : Bouton étiqueté 'Selector'.">
                 Selector
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Variable')" data-tooltip="CSS Variable:
-Définit une variable CSS.
-Utilisation : Utilisé pour stocker des valeurs réutilisables comme les couleurs ou les tailles.
-Apparence : Bouton étiqueté 'Variable'.">
+            <button class="btn-css" onclick="addBlock('CSS Variable')" data-tooltip="CSS Variable: Définit une variable CSS. Utilisation : Utilisé pour stocker des valeurs réutilisables comme les couleurs ou les tailles. Apparence : Bouton étiqueté 'Variable'.">
                 Variable
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Flexbox')" data-tooltip="CSS Flexbox:
-Utilise le modèle de boîte flexible pour la mise en page.
-Utilisation : Facilite la création de mises en page réactives et alignées.
-Apparence : Bouton étiqueté 'Flexbox'.">
+            <button class="btn-css" onclick="addBlock('CSS Flexbox')" data-tooltip="CSS Flexbox: Utilise le modèle de boîte flexible pour la mise en page. Utilisation : Facilite la création de mises en page réactives et alignées. Apparence : Bouton étiqueté 'Flexbox'.">
                 Flexbox
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Grid')" data-tooltip="CSS Grid:
-Utilise le système de grille pour la mise en page.
-Utilisation : Permet de créer des mises en page complexes avec des lignes et des colonnes.
-Apparence : Bouton étiqueté 'Grid'.">
+            <button class="btn-css" onclick="addBlock('CSS Grid')" data-tooltip="CSS Grid: Utilise le système de grille pour la mise en page. Utilisation : Permet de créer des mises en page complexes avec des lignes et des colonnes. Apparence : Bouton étiqueté 'Grid'.">
                 Grid
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Media Query')" data-tooltip="CSS Media Query:
-Applique des styles conditionnels basés sur les caractéristiques de l'appareil.
-Utilisation : Utilisé pour créer des designs responsives.
-Apparence : Bouton étiqueté 'Media Query'.">
+            <button class="btn-css" onclick="addBlock('CSS Media Query')" data-tooltip="CSS Media Query: Applique des styles conditionnels basés sur les caractéristiques de l'appareil. Utilisation : Utilisé pour créer des designs responsives. Apparence : Bouton étiqueté 'Media Query'.">
                 Media Query
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Pseudo-class')" data-tooltip="CSS Pseudo-class:
-Cible les états spéciaux des éléments.
-Utilisation : Utilisé pour appliquer des styles lors d'interactions comme le survol.
-Apparence : Bouton étiqueté 'Pseudo-class'.">
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-class')" data-tooltip="CSS Pseudo-class: Cible les états spéciaux des éléments. Utilisation : Utilisé pour appliquer des styles lors d'interactions comme le survol. Apparence : Bouton étiqueté 'Pseudo-class'.">
                 Pseudo-class
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Pseudo-element')" data-tooltip="CSS Pseudo-element:
-Cible une partie spécifique d'un élément.
-Utilisation : Utilisé pour ajouter des éléments décoratifs ou stylisés.
-Apparence : Bouton étiqueté 'Pseudo-element'.">
+            <button class="btn-css" onclick="addBlock('CSS Pseudo-element')" data-tooltip="CSS Pseudo-element: Cible une partie spécifique d'un élément. Utilisation : Utilisé pour ajouter des éléments décoratifs ou stylisés. Apparence : Bouton étiqueté 'Pseudo-element'.">
                 Pseudo-element
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Animation')" data-tooltip="CSS Animation:
-Crée des animations pour les éléments.
-Utilisation : Utilisé pour animer les propriétés CSS.
-Apparence : Bouton étiqueté 'Animation'.">
+            <button class="btn-css" onclick="addBlock('CSS Animation')" data-tooltip="CSS Animation: Crée des animations pour les éléments. Utilisation : Utilisé pour animer les propriétés CSS. Apparence : Bouton étiqueté 'Animation'.">
                 Animation
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Transition')" data-tooltip="CSS Transition:
-Définit les transitions entre les états des éléments.
-Utilisation : Utilisé pour animer les changements de propriétés CSS.
-Apparence : Bouton étiqueté 'Transition'.">
+            <button class="btn-css" onclick="addBlock('CSS Transition')" data-tooltip="CSS Transition: Définit les transitions entre les états des éléments. Utilisation : Utilisé pour animer les changements de propriétés CSS. Apparence : Bouton étiqueté 'Transition'.">
                 Transition
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Import')" data-tooltip="CSS Import:
-Importe des feuilles de style externes.
-Utilisation : Utilisé pour organiser et modulariser le CSS.
-Apparence : Bouton étiqueté 'Import'.">
+            <button class="btn-css" onclick="addBlock('CSS Import')" data-tooltip="CSS Import: Importe des feuilles de style externes. Utilisation : Utilisé pour organiser et modulariser le CSS. Apparence : Bouton étiqueté 'Import'.">
                 Import
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Box Model')" data-tooltip="CSS Box Model:
-Définit le modèle de boîte des éléments.
-Utilisation : Utilisé pour gérer les marges, les bordures, le padding et la taille des éléments.
-Apparence : Bouton étiqueté 'Box Model'.">
+            <button class="btn-css" onclick="addBlock('CSS Box Model')" data-tooltip="CSS Box Model: Définit le modèle de boîte des éléments. Utilisation : Utilisé pour gérer les marges, les bordures, le padding et la taille des éléments. Apparence : Bouton étiqueté 'Box Model'.">
                 Box Model
             </button>
-            <button class="btn-css" onclick="addBlock('CSS Position')" data-tooltip="CSS Position:
-Définit la position des éléments.
-Utilisation : Utilisé pour positionner les éléments de manière relative, absolue, fixe ou sticky.
-Apparence : Bouton étiqueté 'Position'.">
+            <button class="btn-css" onclick="addBlock('CSS Position')" data-tooltip="CSS Position: Définit la position des éléments. Utilisation : Utilisé pour positionner les éléments de manière relative, absolue, fixe ou sticky. Apparence : Bouton étiqueté 'Position'.">
                 Position
             </button>
         </div>
 
-        <!-- Group JS Buttons -->
         <div class="button-group" id="js-group">
             <h3>JavaScript</h3>
-            <button class="btn-js" onclick="addBlock('JS Script')" data-tooltip="JS Script:
-Inclut ou exécute un script JavaScript.
-Utilisation : Ajoutez des interactions dynamiques à votre page web.
-Apparence : Bouton étiqueté 'Script'.">
+            <button class="btn-js" onclick="addBlock('JS Script')" data-tooltip="JS Script: Inclut ou exécute un script JavaScript. Utilisation : Ajoutez des interactions dynamiques à votre page web. Apparence : Bouton étiqueté 'Script'.">
                 Script
             </button>
-            <button class="btn-js" onclick="addBlock('JS Constant')" data-tooltip="JS Constant:
-Définit une constante en JavaScript.
-Utilisation : Utilisé pour déclarer des variables dont la valeur ne changera pas.
-Apparence : Bouton étiqueté 'Constant'.">
+            <button class="btn-js" onclick="addBlock('JS Constant')" data-tooltip="JS Constant: Définit une constante en JavaScript. Utilisation : Utilisé pour déclarer des variables dont la valeur ne changera pas. Apparence : Bouton étiqueté 'Constant'.">
                 Constant
             </button>
-            <button class="btn-js" onclick="addBlock('JS Variable')" data-tooltip="JS Variable:
-Définit une variable en JavaScript.
-Utilisation : Utilisé pour stocker des données qui peuvent changer.
-Apparence : Bouton étiqueté 'Variable'.">
+            <button class="btn-js" onclick="addBlock('JS Variable')" data-tooltip="JS Variable: Définit une variable en JavaScript. Utilisation : Utilisé pour stocker des données qui peuvent changer. Apparence : Bouton étiqueté 'Variable'.">
                 Variable
             </button>
-            <button class="btn-js" onclick="addBlock('JS Function')" data-tooltip="JS Function:
-Définit une fonction en JavaScript.
-Utilisation : Encapsule des blocs de code réutilisables.
-Apparence : Bouton étiqueté 'Function'.">
+            <button class="btn-js" onclick="addBlock('JS Function')" data-tooltip="JS Function: Définit une fonction en JavaScript. Utilisation : Encapsule des blocs de code réutilisables. Apparence : Bouton étiqueté 'Function'.">
                 Function
             </button>
-            <button class="btn-js" onclick="addBlock('JS Class')" data-tooltip="JS Class:
-Définit une classe en JavaScript.
-Utilisation : Utilisé pour créer des objets avec des propriétés et des méthodes.
-Apparence : Bouton étiqueté 'Class'.">
+            <button class="btn-js" onclick="addBlock('JS Class')" data-tooltip="JS Class: Définit une classe en JavaScript. Utilisation : Utilisé pour créer des objets avec des propriétés et des méthodes. Apparence : Bouton étiqueté 'Class'.">
                 Class
             </button>
-            <button class="btn-js" onclick="addBlock('JS Module')" data-tooltip="JS Module:
-Crée un module JavaScript.
-Utilisation : Utilisé pour organiser le code en modules réutilisables.
-Apparence : Bouton étiqueté 'Module'.">
+            <button class="btn-js" onclick="addBlock('JS Module')" data-tooltip="JS Module: Crée un module JavaScript. Utilisation : Utilisé pour organiser le code en modules réutilisables. Apparence : Bouton étiqueté 'Module'.">
                 Module
             </button>
-            <button class="btn-js" onclick="addBlock('JS Event Listener')" data-tooltip="JS Event Listener:
-Ajoute un écouteur d'événement à un élément.
-Utilisation : Utilisé pour gérer les interactions utilisateur comme les clics.
-Apparence : Bouton étiqueté 'Event Listener'.">
+            <button class="btn-js" onclick="addBlock('JS Event Listener')" data-tooltip="JS Event Listener: Ajoute un écouteur d'événement à un élément. Utilisation : Utilisé pour gérer les interactions utilisateur comme les clics. Apparence : Bouton étiqueté 'Event Listener'.">
                 Event Listener
             </button>
-            <button class="btn-js" onclick="addBlock('JS DOM Manipulation')" data-tooltip="JS DOM Manipulation:
-Modifie le Document Object Model.
-Utilisation : Utilisé pour créer, supprimer ou modifier des éléments HTML dynamiquement.
-Apparence : Bouton étiqueté 'DOM Manipulation'.">
+            <button class="btn-js" onclick="addBlock('JS DOM Manipulation')" data-tooltip="JS DOM Manipulation: Modifie le Document Object Model. Utilisation : Utilisé pour créer, supprimer ou modifier des éléments HTML dynamiquement. Apparence : Bouton étiqueté 'DOM Manipulation'.">
                 DOM Manipulation
             </button>
-            <button class="btn-js" onclick="addBlock('JS Fetch API')" data-tooltip="JS Fetch API:
-Effectue des requêtes réseau.
-Utilisation : Utilisé pour récupérer des données depuis des APIs ou des serveurs.
-Apparence : Bouton étiqueté 'Fetch API'.">
+            <button class="btn-js" onclick="addBlock('JS Fetch API')" data-tooltip="JS Fetch API: Effectue des requêtes réseau. Utilisation : Utilisé pour récupérer des données depuis des APIs ou des serveurs. Apparence : Bouton étiqueté 'Fetch API'.">
                 Fetch API
             </button>
-            <button class="btn-js" onclick="addBlock('JS Async Function')" data-tooltip="JS Async Function:
-Définit une fonction asynchrone.
-Utilisation : Utilisé pour gérer des opérations asynchrones comme les requêtes réseau.
-Apparence : Bouton étiqueté 'Async Function'.">
+            <button class="btn-js" onclick="addBlock('JS Async Function')" data-tooltip="JS Async Function: Définit une fonction asynchrone. Utilisation : Utilisé pour gérer des opérations asynchrones comme les requêtes réseau. Apparence : Bouton étiqueté 'Async Function'.">
                 Async Function
             </button>
-            <button class="btn-js" onclick="addBlock('JS Promise')" data-tooltip="JS Promise:
-Crée une promesse en JavaScript.
-Utilisation : Utilisé pour gérer les opérations asynchrones de manière plus structurée.
-Apparence : Bouton étiqueté 'Promise'.">
+            <button class="btn-js" onclick="addBlock('JS Promise')" data-tooltip="JS Promise: Crée une promesse en JavaScript. Utilisation : Utilisé pour gérer les opérations asynchrones de manière plus structurée. Apparence : Bouton étiqueté 'Promise'.">
                 Promise
             </button>
-            <button class="btn-js" onclick="addBlock('JS Arrow Function')" data-tooltip="JS Arrow Function:
-Définit une fonction fléchée.
-Utilisation : Utilisé pour des fonctions concises et lexiquement liées.
-Apparence : Bouton étiqueté 'Arrow Function'.">
+            <button class="btn-js" onclick="addBlock('JS Arrow Function')" data-tooltip="JS Arrow Function: Définit une fonction fléchée. Utilisation : Utilisé pour des fonctions concises et lexiquement liées. Apparence : Bouton étiqueté 'Arrow Function'.">
                 Arrow Function
             </button>
-            <button class="btn-js" onclick="addBlock('JS Array Methods')" data-tooltip="JS Array Methods:
-Utilise des méthodes d'array en JavaScript.
-Utilisation : Utilisé pour manipuler et itérer sur des tableaux.
-Apparence : Bouton étiqueté 'Array Methods'.">
+            <button class="btn-js" onclick="addBlock('JS Array Methods')" data-tooltip="JS Array Methods: Utilise des méthodes d'array en JavaScript. Utilisation : Utilisé pour manipuler et itérer sur des tableaux. Apparence : Bouton étiqueté 'Array Methods'.">
                 Array Methods
             </button>
         </div>
@@ -604,6 +505,28 @@ Apparence : Bouton étiqueté 'Array Methods'.">
         </table>
         <button id="download-btn" onclick="downloadPage()">Download index.html</button>
         <iframe id="generated-preview" sandbox="allow-scripts allow-same-origin"></iframe>
+        <!-- Sélecteur pour choisir le générateur et bouton pour générer le backend -->
+        <label for="generator-select">Choisissez un générateur :</label>
+        <select id="generator-select">
+            <option value="chatgpt">ChatGPT</option>
+            <option value="claude">Claude</option>
+        </select>
+        <input type="password" id="apiKeyInput" placeholder="Enter your API key">
+        <button id="validateApiKeyBtn" onclick="requestPassword()">Save</button>
+        <div id="passwordPrompt" style="display: none;">
+            <input type="password" id="passwordInput" placeholder="Enter a password to secure your API key">
+            <button onclick="confirmPassword()">Confirm</button>
+        </div>
+        <button onclick="generateBackend()" id="generate-backend-btn">Générer Backend</button>
+        
+        <!-- Affichage des détails du backend -->
+        <div id="backend-details">
+            <h3>Backend Generation Details</h3>
+            <div id="response-content" class="markdown-content"></div>
+
+        </div>
+        <div id="loader" style="display: none;">Chargement en cours...</div>
+
     </div>
 
     <div id="editor-modal">
@@ -636,1010 +559,1210 @@ Apparence : Bouton étiqueté 'Array Methods'.">
     </div>
 
     <script>
-        const blocksKey = 'pageBuilderBlocks';
-        let blocks = [];
-        let currentEditingIndex = null;
-        let draggedIndex = null;
-        let categoriesVisible = true;
+        
+const blocksKey = 'pageBuilderBlocks';
+let blocks = [];
+let currentEditingIndex = null;
+let draggedIndex = null;
+let categoriesVisible = true;
 
-        const editor = ace.edit("ace-editor");
-        editor.setTheme("ace/theme/github");
-        editor.session.setMode("ace/mode/javascript");
-        editor.setOptions({
-            fontSize: "14px",
-            showPrintMargin: false
+const editor = ace.edit("ace-editor");
+editor.setTheme("ace/theme/github");
+editor.session.setMode("ace/mode/javascript");
+editor.setOptions({
+    fontSize: "14px",
+    showPrintMargin: false
+});
+
+class StorageViewer {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            throw new Error('Container element not found');
+        }
+        this.init();
+    }
+
+    async init() {
+        this.container.innerHTML = `
+            <div class="storage-viewer">
+                <div class="storage-section">
+                    <h3>IndexedDB</h3>
+                    <div id="idb-content"></div>
+                </div>
+                <div class="storage-section">
+                    <h3>localStorage</h3>
+                    <div id="ls-content"></div>
+                </div>
+                <div class="storage-section">
+                    <h3>Cookies</h3>
+                    <div id="cookies-content"></div>
+                </div>
+            </div>
+        `;
+        await this.displayIndexedDB();
+        this.displayLocalStorage();
+        this.displayCookies();
+    }
+    
+    async displayIndexedDB() {
+        const idbContent = this.container.querySelector('#idb-content');
+        try {
+            const databases = await window.indexedDB.databases();
+            let html = '<table><tr><th>Base de données</th><th>Contenu</th></tr>';
+            for (const db of databases) {
+                const dbContent = await this.getIndexedDBContent(db.name);
+                html += `
+                    <tr>
+                        <td>${db.name}</td>
+                        <td><pre>${JSON.stringify(dbContent, null, 2)}</pre></td>
+                    </tr>
+                `;
+            }
+            html += '</table>';
+            idbContent.innerHTML = databases.length ? html : 'Aucune base IndexedDB trouvée';
+        } catch (error) {
+            idbContent.innerHTML = `Erreur lors de l'accès à IndexedDB: ${error.message}`;
+        }
+    }
+
+    async getIndexedDBContent(dbName) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName);
+            const content = {};
+            request.onerror = () => reject(request.error);
+            request.onsuccess = async (event) => {
+                const db = event.target.result;
+                const objectStoreNames = Array.from(db.objectStoreNames);
+                for (const storeName of objectStoreNames) {
+                    const transaction = db.transaction(storeName, 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    content[storeName] = await new Promise((resolve) => {
+                        const items = [];
+                        store.openCursor().onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                items.push({ key: cursor.key, value: cursor.value });
+                                cursor.continue();
+                            } else {
+                                resolve(items);
+                            }
+                        };
+                    });
+                }
+                resolve(content);
+                db.close();
+            };
         });
-        
-        class StorageViewer {
-            constructor(containerId) {
-                this.container = document.getElementById(containerId);
-                if (!this.container) {
-                    throw new Error('Container element not found');
-                }
-                
-                this.init();
-            }
-        
-            async init() {
-                this.container.innerHTML = `
-                    <div class="storage-viewer">
-                        <div class="storage-section">
-                            <h3>IndexedDB</h3>
-                            <div id="idb-content"></div>
-                        </div>
-                        <div class="storage-section">
-                            <h3>localStorage</h3>
-                            <div id="ls-content"></div>
-                        </div>
-                        <div class="storage-section">
-                            <h3>Cookies</h3>
-                            <div id="cookies-content"></div>
-                        </div>
-                    </div>
-                    <style>
-                        .storage-viewer {
-                            font-family: Arial, sans-serif;
-                            padding: 10px;
-                        }
-                        .storage-section {
-                            margin-bottom: 20px;
-                            border: 1px solid #ddd;
-                            padding: 10px;
-                            border-radius: 4px;
-                        }
-                        .storage-section h3 {
-                            margin-top: 0;
-                            color: #333;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                        }
-                        th, td {
-                            border: 1px solid #ddd;
-                            padding: 8px;
-                            text-align: left;
-                        }
-                        th {
-                            background-color: #f5f5f5;
-                        }
-                    </style>
-                `;
-        
-                await this.displayIndexedDB();
-                this.displayLocalStorage();
-                this.displayCookies();
-            }
-            
-            async displayIndexedDB() {
-                const idbContent = this.container.querySelector('#idb-content');
-                try {
-                    const databases = await window.indexedDB.databases();
-                    let html = '<table><tr><th>Base de données</th><th>Contenu</th></tr>';
-                    
-                    for (const db of databases) {
-                        const dbContent = await this.getIndexedDBContent(db.name);
-                        html += `
-                            <tr>
-                                <td>${db.name}</td>
-                                <td><pre>${JSON.stringify(dbContent, null, 2)}</pre></td>
-                            </tr>
-                        `;
-                    }
-                    
-                    html += '</table>';
-                    idbContent.innerHTML = databases.length ? html : 'Aucune base IndexedDB trouvée';
-                } catch (error) {
-                    idbContent.innerHTML = `Erreur lors de l'accès à IndexedDB: ${error.message}`;
-                }
-            }
-        
-            async getIndexedDBContent(dbName) {
-                return new Promise((resolve, reject) => {
-                    const request = indexedDB.open(dbName);
-                    const content = {};
-        
-                    request.onerror = () => reject(request.error);
-                    request.onsuccess = async (event) => {
-                        const db = event.target.result;
-                        const objectStoreNames = Array.from(db.objectStoreNames);
-                        
-                        for (const storeName of objectStoreNames) {
-                            const transaction = db.transaction(storeName, 'readonly');
-                            const store = transaction.objectStore(storeName);
-                            content[storeName] = await new Promise((resolve) => {
-                                const items = [];
-                                store.openCursor().onsuccess = (event) => {
-                                    const cursor = event.target.result;
-                                    if (cursor) {
-                                        items.push({ key: cursor.key, value: cursor.value });
-                                        cursor.continue();
-                                    } else {
-                                        resolve(items);
-                                    }
-                                };
-                            });
-                        }
-                        resolve(content);
-                        db.close();
-                    };
-                });
-            }
-        
-            displayLocalStorage() {
-                const lsContent = this.container.querySelector('#ls-content');
-                try {
-                    const items = Object.entries(localStorage);
-                    if (items.length === 0) {
-                        lsContent.innerHTML = 'localStorage est vide';
-                        return;
-                    }
-        
-                    let html = '<table><tr><th>Clé</th><th>Valeur</th></tr>';
-                    items.forEach(([key, value]) => {
-                        html += `
-                            <tr>
-                                <td>${key}</td>
-                                <td><pre>${value}</pre></td>
-                            </tr>
-                        `;
-                    });
-                    html += '</table>';
-                    lsContent.innerHTML = html;
-                } catch (error) {
-                    lsContent.innerHTML = `Erreur lors de l'accès au localStorage: ${error.message}`;
-                }
-            }
-        
-            displayCookies() {
-                const cookiesContent = this.container.querySelector('#cookies-content');
-                try {
-                    const cookies = document.cookie.split(';').map(cookie => {
-                        const [key, value] = cookie.trim().split('=');
-                        return { key, value };
-                    }).filter(cookie => cookie.key);
-        
-                    if (cookies.length === 0) {
-                        cookiesContent.innerHTML = 'Aucun cookie trouvé';
-                        return;
-                    }
-        
-                    let html = '<table><tr><th>Nom</th><th>Valeur</th></tr>';
-                    cookies.forEach(({ key, value }) => {
-                        html += `
-                            <tr>
-                                <td>${key}</td>
-                                <td>${value}</td>
-                            </tr>
-                        `;
-                    });
-                    html += '</table>';
-                    cookiesContent.innerHTML = html;
-                } catch (error) {
-                    cookiesContent.innerHTML = `Erreur lors de l'accès aux cookies: ${error.message}`;
-                }
-            }
-        }
+    }
 
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    displayLocalStorage() {
+        const lsContent = this.container.querySelector('#ls-content');
+        const items = Object.entries(localStorage);
+        if (items.length === 0) {
+            lsContent.innerHTML = 'localStorage est vide';
+            return;
         }
+        let html = '<table><tr><th>Clé</th><th>Valeur</th></tr>';
+        items.forEach(([key, value]) => {
+            html += `
+                <tr>
+                    <td>${key}</td>
+                    <td><pre>${value}</pre></td>
+                </tr>
+            `;
+        });
+        html += '</table>';
+        lsContent.innerHTML = html;
+    }
 
-        window.onload = function() {
-            const savedBlocks = localStorage.getItem(blocksKey);
-            if (savedBlocks) {
-                try {
-                    blocks = JSON.parse(savedBlocks);
-                } catch (e) {
-                    console.error("Erreur lors de la récupération des blocs depuis localStorage:", e);
-                    blocks = [];
-                }
-            }
-            renderBlocks();
-            updateTables();
-            updatePreview();
-            toggleResetButton();
-            togglePreview();
+    displayCookies() {
+        const cookiesContent = this.container.querySelector('#cookies-content');
+        const cookies = document.cookie.split(';').map(cookie => {
+            const [key, value] = cookie.trim().split('=');
+            return { key, value };
+        }).filter(cookie => cookie.key);
+        if (cookies.length === 0) {
+            cookiesContent.innerHTML = 'Aucun cookie trouvé';
+            return;
+        }
+        let html = '<table><tr><th>Nom</th><th>Valeur</th></tr>';
+        cookies.forEach(({ key, value }) => {
+            html += `
+                <tr>
+                    <td>${key}</td>
+                    <td>${value}</td>
+                </tr>
+            `;
+        });
+        html += '</table>';
+        cookiesContent.innerHTML = html;
+    }
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+window.onload = function() {
+    const savedBlocks = localStorage.getItem(blocksKey);
+    if (savedBlocks) {
+        try {
+            blocks = JSON.parse(savedBlocks);
+        } catch (e) {
+            blocks = [];
+        }
+    }
+    renderBlocks();
+    updateTables();
+    updatePreview();
+    toggleResetButton();
+    togglePreview();
+};
+
+function saveBlocks() {
+    localStorage.setItem(blocksKey, JSON.stringify(blocks));
+}
+
+function addBlock(type) {
+    const block = {
+        type,
+        title: '',
+        content: getDefaultContent(type),
+        isCustom: type === 'Custom',
+        category: type === 'Custom' ? null : null
+    };
+    blocks.push(block);
+    renderBlocks();
+    updateTables();
+    saveBlocks();
+    updatePreview();
+    toggleResetButton();
+    togglePreview();
+}
+
+function getDefaultContent(type) {
+    const defaults = {
+        'HTML DOCTYPE': '<!DOCTYPE html>',
+        'HTML Lang': '<html lang="en">',
+        'HTML Title': '<title>My Page</title>',
+        'HTML Meta': '<meta charset="UTF-8">',
+        'HTML Header': '<header>Header Content</header>',
+        'HTML Footer': '<footer>Footer Content</footer>',
+        'HTML Nav': '<nav>Navigation Links</nav>',
+        'HTML Section': '<section>Section Content</section>',
+        'HTML Article': '<article>Article Content</article>',
+        'HTML Aside': '<aside>Aside Content</aside>',
+        'HTML Main': '<main>Main Content</main>',
+        'HTML Form': '<form action="#" method="post">Form Content</form>',
+        'HTML Input': '<input type="text" placeholder="Enter text">',
+        'HTML Textarea': '<textarea placeholder="Enter text"></textarea>',
+        'HTML Select': '<select><option value="option1">Option 1</option></select>',
+        'HTML Option': '<option value="option1">Option 1</option>',
+        'HTML Button': '<button>Click me</button>',
+        'HTML UL': '<ul><li>Item 1</li></ul>',
+        'HTML OL': '<ol><li>Item 1</li></ol>',
+        'HTML LI': '<li>List Item</li>',
+        'HTML Table': '<table><tr><th>Header</th></tr></table>',
+        'HTML TR': '<tr><td>Data</td></tr>',
+        'HTML TH': '<th>Header</th>',
+        'HTML TD': '<td>Data</td>',
+        'CSS Class': '.my-class { color: red; }',
+        'CSS ID': '#my-id { font-size: 16px; }',
+        'CSS Selector': 'p { margin-bottom: 10px; }',
+        'CSS Variable': '--main-color: #3498db;',
+        'CSS Flexbox': 'display: flex; justify-content: center; align-items: center;',
+        'CSS Grid': 'display: grid; grid-template-columns: repeat(3, 1fr);',
+        'CSS Media Query': '@media (max-width: 600px) { body { background-color: lightgreen; } }',
+        'CSS Pseudo-class': 'a:hover { color: blue; }',
+        'CSS Pseudo-element': 'p::first-letter { font-size: 2em; }',
+        'CSS Animation': '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
+        'CSS Transition': 'transition: all 0.3s ease;',
+        'CSS Import': '@import url("styles.css");',
+        'CSS Box Model': 'div { padding: 10px; margin: 5px; border: 1px solid #000; }',
+        'CSS Position': 'position: absolute; top: 50px; left: 100px;',
+        'JS Script': '<!-- <script>console.log("Script component loaded");<\/script> -->\n<script src="https://MYCDN.com"><\/script>',
+        'JS Constant': 'const myConstant = "Hello World";',
+        'JS Variable': 'let myVariable = 10;',
+        'JS Function': 'function myFunction() { return true; }',
+        'JS Class': 'class MyClass { constructor() { this.name = "MyClass"; } }',
+        'JS Module': 'export function myModuleFunction() { console.log("Module Function"); }',
+        'JS Event Listener': 'document.getElementById("myButton").addEventListener("click", function() { alert("Button Clicked!"); });',
+        'JS DOM Manipulation': 'const div = document.createElement("div"); div.textContent = "New Div"; document.body.appendChild(div);',
+        'JS Fetch API': 'fetch("https://api.example.com/data").then(response => response.json()).then(data => console.log(data));',
+        'JS Async Function': 'async function fetchData() { const response = await fetch("https://api.example.com/data"); const data = await response.json(); console.log(data); }',
+        'JS Promise': 'const myPromise = new Promise((resolve, reject) => { setTimeout(() => { resolve("Promise Resolved"); }, 1000); });',
+        'JS Arrow Function': 'const myArrowFunction = () => { console.log("Arrow Function"); };',
+        'JS Array Methods': 'const arr = [1, 2, 3]; const doubled = arr.map(num => num * 2);'
+    };
+    return defaults[type] || '';
+}
+
+function renderBlocks() {
+    const blocksDiv = document.getElementById('blocks');
+    blocksDiv.innerHTML = '';
+    blocks.forEach((block, index) => {
+        const div = document.createElement('div');
+        div.className = 'block' + (block.isCustom ? ' custom-block' : '');
+        div.id = `block-${index}`;
+        div.draggable = true;
+        div.ondragstart = (e) => dragStart(e, index, div);
+        div.ondragenter = (e) => dragEnter(e, index);
+        div.ondragover = (e) => e.preventDefault();
+        div.ondragleave = dragLeave;
+        div.ondrop = (e) => drop(e, index, div);
+        div.innerHTML = `
+            <div class="block-content">${escapeHtml(block.type)}</div>
+            <button class="edit-btn" onclick="openEditor(${index})">Edit</button>
+            <button class="remove-btn" onclick="removeBlock(${index})">X</button>
+        `;
+        blocksDiv.appendChild(div);
+    });
+}
+
+function updateTables() {
+    const htmlBlocks = [];
+    const cssBlocks = [];
+    const jsBlocks = [];
+    blocks.forEach((block, index) => {
+        let displayTitle = block.title || block.type;
+        if (block.isCustom) {
+            displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
+        }
+        if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
+            htmlBlocks.push({ title: displayTitle, index });
+        }
+        if (['CSS Class', 'CSS ID', 'CSS Selector', 'CSS Variable', 'CSS Flexbox', 'CSS Grid', 'CSS Media Query', 'CSS Pseudo-class', 'CSS Pseudo-element', 'CSS Animation', 'CSS Transition', 'CSS Import', 'CSS Box Model', 'CSS Position'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
+            cssBlocks.push({ title: displayTitle, index });
+        }
+        if (['JS Script', 'JS Constant', 'JS Variable', 'JS Function', 'JS Class', 'JS Module', 'JS Event Listener', 'JS DOM Manipulation', 'JS Fetch API', 'JS Async Function', 'JS Promise', 'JS Arrow Function', 'JS Array Methods'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
+            jsBlocks.push({ title: displayTitle, index });
+        }
+    });
+    populateTable('htmlTable', htmlBlocks);
+    populateTable('cssTable', cssBlocks);
+    populateTable('jsTable', jsBlocks);
+}
+
+function populateTable(tableId, data) {
+    const tbody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+    tbody.innerHTML = '';
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.className = 'preview-content';
+        cell.textContent = item.title;
+        cell.onclick = () => {
+            highlightBlock(item.index);
         };
+        row.appendChild(cell);
+        tbody.appendChild(row);
+    });
+}
 
-        function saveBlocks() {
-            localStorage.setItem(blocksKey, JSON.stringify(blocks));
+function updatePreview() {
+    const generatedHTML = generateHTML();
+    const iframe = document.getElementById('generated-preview');
+    if (blocks.length > 0) {
+        iframe.srcdoc = generatedHTML;
+        iframe.style.display = 'block';
+    } else {
+        iframe.srcdoc = '';
+        iframe.style.display = 'none';
+    }
+}
+
+function generateHTML() {
+    let html = '';
+    let doctype = '<!DOCTYPE html>';
+    let lang = '<html lang="en">';
+    const doctypeBlocks = blocks.filter(block => block.type === 'HTML DOCTYPE');
+    if (doctypeBlocks.length > 0) {
+        doctype = doctypeBlocks[0].content || '<!DOCTYPE html>';
+    }
+    const langBlocks = blocks.filter(block => block.type === 'HTML Lang');
+    if (langBlocks.length > 0) {
+        lang = langBlocks[0].content || '<html lang="en">';
+    }
+    html += `${doctype}\n`;
+    html += `${lang}\n`;
+    html += `<head>\n`;
+
+    blocks.forEach(block => {
+        if (block.type === 'HTML DOCTYPE' || block.type === 'HTML Lang') {
+            return;
+        } else if (block.type.startsWith('CSS ')) {
+            html += `<style>\n${block.content}\n</style>\n`;
+        } else if (block.type === 'JS CDN') {
+            html += `${block.content}\n`;
         }
+    });
 
-        function addBlock(type) {
-            const block = {
-                type,
-                title: '',
-                content: getDefaultContent(type),
-                isCustom: type === 'Custom',
-                category: type === 'Custom' ? null : null
-            };
-            blocks.push(block);
-            renderBlocks();
-            updateTables();
-            saveBlocks();
-            updatePreview();
-            toggleResetButton();
-            togglePreview();
+    html += `</head>\n`;
+    html += `<body>\n`;
+
+    blocks.forEach(block => {
+        if (block.type.startsWith('HTML ')) {
+            if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
+            html += `${block.content}\n`;
         }
+    });
 
-        function getDefaultContent(type) {
-            const defaults = {
-                'HTML DOCTYPE': '<!DOCTYPE html>',
-                'HTML Lang': '<html lang="en">',
-                'HTML Title': '<title>My Page</title>',
-                'HTML Meta': '<meta charset="UTF-8">',
-                'HTML Header': '<header>Header Content</header>',
-                'HTML Footer': '<footer>Footer Content</footer>',
-                'HTML Nav': '<nav>Navigation Links</nav>',
-                'HTML Section': '<section>Section Content</section>',
-                'HTML Article': '<article>Article Content</article>',
-                'HTML Aside': '<aside>Aside Content</aside>',
-                'HTML Main': '<main>Main Content</main>',
-                'HTML Form': '<form action="#" method="post">Form Content</form>',
-                'HTML Input': '<input type="text" placeholder="Enter text">',
-                'HTML Textarea': '<textarea placeholder="Enter text"></textarea>',
-                'HTML Select': '<select><option value="option1">Option 1</option></select>',
-                'HTML Option': '<option value="option1">Option 1</option>',
-                'HTML Button': '<button>Click me</button>',
-                'HTML UL': '<ul><li>Item 1</li></ul>',
-                'HTML OL': '<ol><li>Item 1</li></ol>',
-                'HTML LI': '<li>List Item</li>',
-                'HTML Table': '<table><tr><th>Header</th></tr></table>',
-                'HTML TR': '<tr><td>Data</td></tr>',
-                'HTML TH': '<th>Header</th>',
-                'HTML TD': '<td>Data</td>',
-                'CSS Class': '.my-class { color: red; }',
-                'CSS ID': '#my-id { font-size: 16px; }',
-                'CSS Selector': 'p { margin-bottom: 10px; }',
-                'CSS Variable': '--main-color: #3498db;',
-                'CSS Flexbox': 'display: flex; justify-content: center; align-items: center;',
-                'CSS Grid': 'display: grid; grid-template-columns: repeat(3, 1fr);',
-                'CSS Media Query': '@media (max-width: 600px) { body { background-color: lightgreen; } }',
-                'CSS Pseudo-class': 'a:hover { color: blue; }',
-                'CSS Pseudo-element': 'p::first-letter { font-size: 2em; }',
-                'CSS Animation': '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
-                'CSS Transition': 'transition: all 0.3s ease;',
-                'CSS Import': '@import url("styles.css");',
-                'CSS Box Model': 'div { padding: 10px; margin: 5px; border: 1px solid #000; }',
-                'CSS Position': 'position: absolute; top: 50px; left: 100px;',
-                'JS Script': '<!-- <script>console.log("Script component loaded");<\/script> -->\n<script src="https://MYCDN.com"><\/script>',
-                'JS Constant': 'const myConstant = "Hello World";',
-                'JS Variable': 'let myVariable = 10;',
-                'JS Function': 'function myFunction() { return true; }',
-                'JS Class': 'class MyClass { constructor() { this.name = "MyClass"; } }',
-                'JS Module': 'export function myModuleFunction() { console.log("Module Function"); }',
-                'JS Event Listener': 'document.getElementById("myButton").addEventListener("click", function() { alert("Button Clicked!"); });',
-                'JS DOM Manipulation': 'const div = document.createElement("div"); div.textContent = "New Div"; document.body.appendChild(div);',
-                'JS Fetch API': 'fetch("https://api.example.com/data").then(response => response.json()).then(data => console.log(data));',
-                'JS Async Function': 'async function fetchData() { const response = await fetch("https://api.example.com/data"); const data = await response.json(); console.log(data); }',
-                'JS Promise': 'const myPromise = new Promise((resolve, reject) => { setTimeout(() => { resolve("Promise Resolved"); }, 1000); });',
-                'JS Arrow Function': 'const myArrowFunction = () => { console.log("Arrow Function"); };',
-                'JS Array Methods': 'const arr = [1, 2, 3]; const doubled = arr.map(num => num * 2);'
-            };
-            return defaults[type] || '';
+    html += `</body>\n`;
+    html += `</html>\n`;
+    return html;
+}
+
+function highlightBlock(index) {
+    const blocksDiv = document.getElementById('blocks');
+    Array.from(blocksDiv.children).forEach(child => {
+        child.classList.remove('highlight');
+    });
+    const selectedBlock = document.getElementById(`block-${index}`);
+    if (selectedBlock) {
+        selectedBlock.classList.add('highlight');
+        selectedBlock.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+}
+
+function openEditor(index) {
+    currentEditingIndex = index;
+    const block = blocks[index];
+    document.getElementById('editor-title-text').textContent = `Edit ${block.type} Component`;
+    document.getElementById('block-name').value = block.type.startsWith('HTML Lang') ? block.content : block.title;
+    if (block.type === 'HTML Lang') {
+        document.getElementById('block-name').placeholder = 'e.g., <html lang="en" />';
+    } else {
+        document.getElementById('block-name').placeholder = 'Enter component name';
+    }
+    editor.session.setValue(block.content.startsWith('<') ? block.content : block.content);
+    
+    const categoryGroup = document.getElementById('category-group');
+    if (block.isCustom) {
+        categoryGroup.style.display = 'block';
+        if (block.category) {
+            document.querySelector(`input[name="category"][value="${block.category}"]`).checked = true;
+        } else {
+            document.querySelectorAll('input[name="category"]').forEach(radio => radio.checked = false);
         }
+    } else {
+        categoryGroup.style.display = 'none';
+    }
+    
+    document.getElementById('editor-modal').style.display = 'flex';
+    
+    requestAnimationFrame(() => {
+        editor.resize();
+    });
+}
 
-        function renderBlocks() {
-            const blocksDiv = document.getElementById('blocks');
-            blocksDiv.innerHTML = '';
-            blocks.forEach((block, index) => {
-                const div = document.createElement('div');
-                div.className = 'block' + (block.isCustom ? ' custom-block' : '');
-                div.id = `block-${index}`;
-                div.draggable = true;
-                div.ondragstart = (e) => dragStart(e, index, div);
-                div.ondragenter = (e) => dragEnter(e, index);
-                div.ondragover = (e) => e.preventDefault();
-                div.ondragleave = dragLeave;
-                div.ondrop = (e) => drop(e, index, div);
-                div.innerHTML = `
-                    <div class="block-content">${escapeHtml(block.title || block.type)}</div>
-                    <button class="edit-btn" onclick="openEditor(${index})">Edit</button>
-                    <button class="remove-btn" onclick="removeBlock(${index})">X</button>
-                `;
-                blocksDiv.appendChild(div);
-            });
-        }
+function closeEditor() {
+    document.getElementById('editor-modal').style.display = 'none';
+}
 
-        function updateTables() {
-            const htmlBlocks = [];
-            const cssBlocks = [];
-            const jsBlocks = [];
-            blocks.forEach((block, index) => {
-                let displayTitle = block.title || block.type;
-                if (block.isCustom) {
-                    displayTitle = block.title || (block.category ? `${block.type} (${block.category})` : block.type);
-                }
-                if (['HTML DOCTYPE', 'HTML Lang', 'HTML Title', 'HTML Meta', 'HTML Header', 'HTML Footer', 'HTML Nav', 'HTML Section', 'HTML Article', 'HTML Aside', 'HTML Main', 'HTML Form', 'HTML Input', 'HTML Textarea', 'HTML Select', 'HTML Option', 'HTML Button', 'HTML UL', 'HTML OL', 'HTML LI', 'HTML Table', 'HTML TR', 'HTML TH', 'HTML TD'].includes(block.type) || (block.isCustom && block.category === 'HTML')) {
-                    htmlBlocks.push({ title: displayTitle, index });
-                }
-                if (['CSS Class', 'CSS ID', 'CSS Selector', 'CSS Variable', 'CSS Flexbox', 'CSS Grid', 'CSS Media Query', 'CSS Pseudo-class', 'CSS Pseudo-element', 'CSS Animation', 'CSS Transition', 'CSS Import', 'CSS Box Model', 'CSS Position'].includes(block.type) || (block.isCustom && block.category === 'CSS')) {
-                    cssBlocks.push({ title: displayTitle, index });
-                }
-                if (['JS Script', 'JS Constant', 'JS Variable', 'JS Function', 'JS Class', 'JS Module', 'JS Event Listener', 'JS DOM Manipulation', 'JS Fetch API', 'JS Async Function', 'JS Promise', 'JS Arrow Function', 'JS Array Methods'].includes(block.type) || (block.isCustom && block.category === 'JS')) {
-                    jsBlocks.push({ title: displayTitle, index });
-                }
-            });
-            populateTable('htmlTable', htmlBlocks);
-            populateTable('cssTable', cssBlocks);
-            populateTable('jsTable', jsBlocks);
-        }
-
-        function populateTable(tableId, data) {
-            const tbody = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-            tbody.innerHTML = '';
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.className = 'preview-content';
-                cell.textContent = item.title;
-                cell.onclick = () => {
-                    highlightBlock(item.index);
-                };
-                row.appendChild(cell);
-                tbody.appendChild(row);
-            });
-        }
-
-        function updatePreview() {
-            const generatedHTML = generateHTML();
-            const iframe = document.getElementById('generated-preview');
-            if (blocks.length > 0) {
-                iframe.srcdoc = generatedHTML;
-                iframe.style.display = 'block';
-            } else {
-                iframe.srcdoc = '';
-                iframe.style.display = 'none';
+function saveContent() {
+    if (currentEditingIndex !== null) {
+        const newContent = document.getElementById('block-name').value.trim();
+        const block = blocks[currentEditingIndex];
+        if (block.type === 'HTML Lang') {
+            blocks[currentEditingIndex].content = newContent || 'en';
+        } else {
+            const finalTitle = newContent !== '' ? newContent : block.type;
+            blocks[currentEditingIndex].title = finalTitle;
+            blocks[currentEditingIndex].content = editor.session.getValue();
+            if (blocks[currentEditingIndex].isCustom) {
+                const selectedCategory = document.querySelector('input[name="category"]:checked');
+                blocks[currentEditingIndex].category = selectedCategory ? selectedCategory.value : null;
             }
         }
+        renderBlocks();
+        updateTables();
+        saveBlocks();
+        updatePreview();
+        toggleResetButton();
+        togglePreview();
+        closeEditor();
+    }
+}
 
-        function generateHTML() {
-            let html = '';
-            let doctype = '<!DOCTYPE html>';
-            let lang = '<html lang="en">';
-            const doctypeBlocks = blocks.filter(block => block.type === 'HTML DOCTYPE');
-            if (doctypeBlocks.length > 0) {
-                doctype = doctypeBlocks[0].content || '<!DOCTYPE html>';
-            }
-            const langBlocks = blocks.filter(block => block.type === 'HTML Lang');
-            if (langBlocks.length > 0) {
-                lang = langBlocks[0].content || '<html lang="en">';
-            }
-            html += `${doctype}\n`;
-            html += `${lang}\n`;
-            html += `<head>\n`;
-        
-            blocks.forEach(block => {
-                if (block.type === 'HTML DOCTYPE' || block.type === 'HTML Lang') {
-                    return;
-                }
-                else if (block.type.startsWith('CSS ')) {
-                    html += `<style>\n${block.content}\n</style>\n`;
-                } 
-                else if (block.type === 'JS CDN') {
-                    html += `${block.content}\n`;
-                }
-            });
-        
-            html += `</head>\n`;
-            html += `<body>\n`;
-        
-            blocks.forEach(block => {
-                if (block.type.startsWith('HTML ')) {
-                    if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
-                    html += `${block.content}\n`;
-                }
-            });
-        
-            html += `</body>\n`;
-            html += `</html>\n`;
-            return html;
+function dragStart(e, index, element) {
+    draggedIndex = index;
+    element.style.opacity = 0.5;
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragEnter(e, index) {
+    const blocksDiv = document.getElementById('blocks');
+    let indicator = document.querySelector('.drop-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.classList.add('drop-indicator');
+        blocksDiv.appendChild(indicator);
+    }
+    const targetBlock = blocksDiv.children[index];
+    const topRelative = targetBlock.offsetTop;
+    if (index > draggedIndex) {
+        indicator.style.top = `${topRelative + targetBlock.offsetHeight}px`;
+    } else {
+        indicator.style.top = `${topRelative}px`;
+    }
+    indicator.style.left = '0';
+    indicator.style.width = '100%';
+    indicator.style.display = 'block';
+}
+
+function dragLeave(e) {
+    const indicator = document.querySelector('.drop-indicator');
+    if (indicator) indicator.style.display = 'none';
+}
+
+function drop(e, dropIndex, element) {
+    e.preventDefault();
+    const indicator = document.querySelector('.drop-indicator');
+    if (indicator) indicator.style.display = 'none';
+    if (draggedIndex === null) return;
+    const draggedBlock = blocks.splice(draggedIndex, 1)[0];
+    blocks.splice(dropIndex, 0, draggedBlock);
+    renderBlocks();
+    updateTables();
+    saveBlocks();
+    updatePreview();
+    toggleResetButton();
+    togglePreview();
+}
+
+function removeBlock(index) {
+    if (confirm("Voulez-vous vraiment supprimer ce bloc ?")) {
+        blocks.splice(index, 1);
+        renderBlocks();
+        updateTables();
+        saveBlocks();
+        updatePreview();
+        toggleResetButton();
+        togglePreview();
+    }
+}
+
+function downloadPage() {
+    let html = '';
+    html = generateHTML();
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'index.html';
+    link.click();
+
+    updatePreview();
+}
+
+function resetBlocks() {
+    if (confirm("Êtes-vous sûr de vouloir réinitialiser tous les composants ? Cette action est irréversible.")) {
+        blocks = [];
+        renderBlocks();
+        updateTables();
+        saveBlocks();
+        updatePreview();
+        toggleResetButton();
+        togglePreview();
+    }
+}
+
+function toggleResetButton() {
+    const resetBtn = document.getElementById('reset-btn');
+    if (blocks.length > 1) {
+        resetBtn.style.display = 'block';
+    } else {
+        resetBtn.style.display = 'none';
+    }
+}
+
+function togglePreview() {
+    const iframe = document.getElementById('generated-preview');
+    if (blocks.length > 0) {
+        iframe.style.display = 'block';
+    } else {
+        iframe.style.display = 'none';
+    }
+}
+
+function toggleCategories() {
+    categoriesVisible = !categoriesVisible;
+    document.getElementById('html-group').style.display = categoriesVisible ? 'block' : 'none';
+    document.getElementById('css-group').style.display = categoriesVisible ? 'block' : 'none';
+    document.getElementById('js-group').style.display = categoriesVisible ? 'block' : 'none';
+    document.getElementById('cs-group').style.display = categoriesVisible ? 'block' : 'none';
+}
+class StorageExplorer {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            throw new Error('Container element not found');
         }
+        this.init();
+        this.addStyles();
+    }
 
-        function highlightBlock(index) {
-            const blocksDiv = document.getElementById('blocks');
-            Array.from(blocksDiv.children).forEach(child => {
-                child.classList.remove('highlight');
-            });
-            const selectedBlock = document.getElementById(`block-${index}`);
-            if (selectedBlock) {
-                selectedBlock.classList.add('highlight');
-                selectedBlock.scrollIntoView({ behavior: "smooth", block: "center" });
-            }
-        }
-
-        function openEditor(index) {
-            currentEditingIndex = index;
-            const block = blocks[index];
-            document.getElementById('editor-title-text').textContent = `Edit ${block.type} Component`;
-            document.getElementById('block-name').value = block.type.startsWith('HTML Lang') ? block.content : block.title;
-            if (block.type === 'HTML Lang') {
-                document.getElementById('block-name').placeholder = 'e.g., <html lang="en" />';
-            } else {
-                document.getElementById('block-name').placeholder = 'Enter component name';
-            }
-            editor.session.setValue(block.content.startsWith('<') ? block.content : block.content);
-            
-            const categoryGroup = document.getElementById('category-group');
-            if (block.isCustom) {
-                categoryGroup.style.display = 'block';
-                if (block.category) {
-                    document.querySelector(`input[name="category"][value="${block.category}"]`).checked = true;
-                } else {
-                    document.querySelectorAll('input[name="category"]').forEach(radio => radio.checked = false);
-                }
-            } else {
-                categoryGroup.style.display = 'none';
-            }
-            
-            document.getElementById('editor-modal').style.display = 'flex';
-            
-            requestAnimationFrame(() => {
-                editor.resize();
-            });
-        }
-
-        function closeEditor() {
-            document.getElementById('editor-modal').style.display = 'none';
-        }
-
-        function saveContent() {
-            if (currentEditingIndex !== null) {
-                const newContent = document.getElementById('block-name').value.trim();
-                const block = blocks[currentEditingIndex];
-                if (block.type === 'HTML Lang') {
-                    blocks[currentEditingIndex].content = newContent || 'en';
-                } else {
-                    const finalTitle = newContent !== '' ? newContent : block.type;
-                    blocks[currentEditingIndex].title = finalTitle;
-                    blocks[currentEditingIndex].content = editor.session.getValue();
-                    if (blocks[currentEditingIndex].isCustom) {
-                        const selectedCategory = document.querySelector('input[name="category"]:checked');
-                        blocks[currentEditingIndex].category = selectedCategory ? selectedCategory.value : null;
-                    }
-                }
-                renderBlocks();
-                updateTables();
-                saveBlocks();
-                updatePreview();
-                toggleResetButton();
-                togglePreview();
-                closeEditor();
-            }
-        }
-
-        function dragStart(e, index, element) {
-            draggedIndex = index;
-            element.style.opacity = 0.5;
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        function dragEnter(e, index) {
-            const blocksDiv = document.getElementById('blocks');
-            let indicator = document.querySelector('.drop-indicator');
-            if (!indicator) {
-                indicator = document.createElement('div');
-                indicator.classList.add('drop-indicator');
-                blocksDiv.appendChild(indicator);
-            }
-            const targetBlock = blocksDiv.children[index];
-            const topRelative = targetBlock.offsetTop;
-            if (index > draggedIndex) {
-                indicator.style.top = `${topRelative + targetBlock.offsetHeight}px`;
-            } else {
-                indicator.style.top = `${topRelative}px`;
-            }
-            indicator.style.left = '0';
-            indicator.style.width = '100%';
-            indicator.style.display = 'block';
-        }
-
-        function dragLeave(e) {
-            const indicator = document.querySelector('.drop-indicator');
-            if (indicator) indicator.style.display = 'none';
-        }
-
-        function drop(e, dropIndex, element) {
-            e.preventDefault();
-            const indicator = document.querySelector('.drop-indicator');
-            if (indicator) indicator.style.display = 'none';
-            if (draggedIndex === null) return;
-            const draggedBlock = blocks.splice(draggedIndex, 1)[0];
-            blocks.splice(dropIndex, 0, draggedBlock);
-            renderBlocks();
-            updateTables();
-            saveBlocks();
-            updatePreview();
-            toggleResetButton();
-            togglePreview();
-        }
-
-        function removeBlock(index) {
-            if (confirm("Voulez-vous vraiment supprimer ce bloc ?")) {
-                blocks.splice(index, 1);
-                renderBlocks();
-                updateTables();
-                saveBlocks();
-                updatePreview();
-                toggleResetButton();
-                togglePreview();
-            }
-        }
-
-        function downloadPage() {
-            let html = '';
-            html = generateHTML();
-
-            const blob = new Blob([html], { type: 'text/html' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'index.html';
-            link.click();
-
-            updatePreview();
-        }
-
-        function resetBlocks() {
-            if (confirm("Êtes-vous sûr de vouloir réinitialiser tous les composants ? Cette action est irréversible.")) {
-                blocks = [];
-                renderBlocks();
-                updateTables();
-                saveBlocks();
-                updatePreview();
-                toggleResetButton();
-                togglePreview();
-            }
-        }
-
-        function toggleResetButton() {
-            const resetBtn = document.getElementById('reset-btn');
-            if (blocks.length > 1) {
-                resetBtn.style.display = 'block';
-            } else {
-                resetBtn.style.display = 'none';
-            }
-        }
-
-        function togglePreview() {
-            const iframe = document.getElementById('generated-preview');
-            if (blocks.length > 0) {
-                iframe.style.display = 'block';
-            } else {
-                iframe.style.display = 'none';
-            }
-        }
-
-        function toggleCategories() {
-            categoriesVisible = !categoriesVisible;
-            document.getElementById('html-group').style.display = categoriesVisible ? 'block' : 'none';
-            document.getElementById('css-group').style.display = categoriesVisible ? 'block' : 'none';
-            document.getElementById('js-group').style.display = categoriesVisible ? 'block' : 'none';
-            document.getElementById('cs-group').style.display = categoriesVisible ? 'block' : 'none';
-        }
-        
-        class StorageExplorer {
-            constructor(containerId) {
-                this.container = document.getElementById(containerId);
-                if (!this.container) {
-                    throw new Error('Container element not found');
-                }
-                
-                this.init();
-                this.addStyles();
-            }
-        
-            async init() {
-                this.container.innerHTML = `
-                    <div class="storage-kpis">
-                        <div class="kpi-card" data-type="indexeddb">
-                            <h3>IndexedDB</h3>
-                            <div class="kpi-value">...</div>
-                            <div class="kpi-label">Bases de données</div>
-                        </div>
-                        <div class="kpi-card" data-type="localstorage">
-                            <h3>localStorage</h3>
-                            <div class="kpi-value">...</div>
-                            <div class="kpi-label">Entrées</div>
-                        </div>
-                        <div class="kpi-card" data-type="cookies">
-                            <h3>Cookies</h3>
-                            <div class="kpi-value">...</div>
-                            <div class="kpi-label">Cookies actifs</div>
-                        </div>
+    async init() {
+        this.container.innerHTML = `
+            <div class="storage-kpis">
+                <div class="kpi-card" data-type="indexeddb">
+                    <h3>IndexedDB</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Bases de données</div>
+                </div>
+                <div class="kpi-card" data-type="localstorage">
+                    <h3>localStorage</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Entrées</div>
+                </div>
+                <div class="kpi-card" data-type="cookies">
+                    <h3>Cookies</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Cookies actifs</div>
+                </div>
+            </div>
+            <div class="storage-modal" id="storageModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Explorateur de stockage</h2>
+                        <button class="close-btn">&times;</button>
                     </div>
+                    <div class="modal-nav">
+                        <button class="nav-btn active" data-view="indexeddb">IndexedDB</button>
+                        <button class="nav-btn" data-view="localstorage">localStorage</button>
+                        <button class="nav-btn" data-view="cookies">Cookies</button>
+                    </div>
+                    <div class="modal-body"></div>
+                </div>
+            </div>
+        `;
+        this.initializeEvents();
+        await this.refreshKPIs();
+    }
 
-                    <div class="storage-modal" id="storageModal">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h2>Explorateur de stockage</h2>
-                                <button class="close-btn">&times;</button>
-                            </div>
-                            <div class="modal-nav">
-                                <button class="nav-btn active" data-view="indexeddb">IndexedDB</button>
-                                <button class="nav-btn" data-view="localstorage">localStorage</button>
-                                <button class="nav-btn" data-view="cookies">Cookies</button>
-                            </div>
-                            <div class="modal-body"></div>
-                        </div>
+    addStyles() {
+        const styles = `
+            .storage-kpis { display: flex; gap: 20px; flex-wrap: wrap; }
+            .kpi-card { flex: 1; min-width: 200px; padding: 20px; background: white; border-radius: 10px; cursor: pointer; transition: transform 0.2s; }
+            .kpi-card:hover { transform: translateY(-2px); }
+            .kpi-card h3 { margin: 0; color: #333; font-size: 16px; }
+            .kpi-value { font-size: 28px; font-weight: bold; margin: 10px 0; color: #2196F3; }
+            .kpi-label { color: #666; font-size: 14px; }
+            .storage-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; }
+            .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; width: 90%; max-width: 800px; max-height: 90vh; border-radius: 10px; display: flex; flex-direction: column; }
+            .modal-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+            .modal-header h2 { margin: 0; font-size: 20px; }
+            .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
+            .modal-nav { display: flex; gap: 10px; padding: 10px 20px; border-bottom: 1px solid #eee; overflow-x: auto; }
+            .nav-btn { padding: 8px 16px; border: none; background: none; cursor: pointer; border-radius: 20px; white-space: nowrap; }
+            .nav-btn.active { background: #2196F3; color: white; }
+            .modal-body { padding: 20px; overflow-y: auto; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #f5f5f5; font-weight: bold; }
+            @media (max-width: 600px) { .kpi-card { min-width: 100%; } }
+        `;
+        const styleElement = document.createElement('style');
+        styleElement.textContent = styles;
+        document.head.appendChild(styleElement);
+    }
+
+    initializeEvents() {
+        this.container.querySelectorAll('.kpi-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.openModal(card.dataset.type);
+            });
+        });
+        const modal = this.container.querySelector('#storageModal');
+        modal.querySelector('.close-btn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+        modal.querySelector('.modal-nav').addEventListener('click', (e) => {
+            if (e.target.classList.contains('nav-btn')) {
+                this.showView(e.target.dataset.view);
+                modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    async refreshKPIs() {
+        const databases = await window.indexedDB.databases();
+        this.updateKPIValue('indexeddb', databases.length);
+        const lsCount = Object.keys(localStorage).length;
+        this.updateKPIValue('localstorage', lsCount);
+        const cookiesCount = document.cookie.split(';').filter(cookie => cookie.trim()).length;
+        this.updateKPIValue('cookies', cookiesCount);
+    }
+
+    updateKPIValue(type, value) {
+        const kpiCard = this.container.querySelector(`[data-type="${type}"] .kpi-value`);
+        if (kpiCard) {
+            kpiCard.textContent = value;
+        }
+    }
+
+    async openModal(type) {
+        const modal = this.container.querySelector('#storageModal');
+        modal.style.display = 'block';
+        modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === type));
+        await this.showView(type);
+    }
+
+    async showView(type) {
+        const modalBody = this.container.querySelector('.modal-body');
+        modalBody.innerHTML = 'Chargement...';
+        switch (type) {
+            case 'indexeddb':
+                await this.showIndexedDBView(modalBody);
+                break;
+            case 'localstorage':
+                this.showLocalStorageView(modalBody);
+                break;
+            case 'cookies':
+                this.showCookiesView(modalBody);
+                break;
+        }
+    }
+
+    async showIndexedDBView(container) {
+        try {
+            const databases = await window.indexedDB.databases();
+            if (databases.length === 0) {
+                container.innerHTML = 'Aucune base IndexedDB trouvée';
+                return;
+            }
+            let html = '<div class="idb-explorer">';
+            for (const db of databases) {
+                const content = await this.getIndexedDBContent(db.name);
+                html += `
+                    <div class="db-section">
+                        <h3>${db.name}</h3>
+                        ${this.formatObjectStores(content)}
                     </div>
                 `;
-        
-                this.initializeEvents();
-                await this.refreshKPIs();
             }
-        
-            addStyles() {
-                const styles = `
-                    .storage-kpis {
-                        display: flex;
-                        gap: 20px;
-                        flex-wrap: wrap;
-                    }
+            html += '</div>';
+            container.innerHTML = html;
+        } catch (error) {
+            container.innerHTML = `Erreur: ${error.message}`;
+        }
+    }
 
-                    .kpi-card {
-                        flex: 1;
-                        min-width: 200px;
-                        padding: 20px;
-                        background: white;
-                        border-radius: 10px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        cursor: pointer;
-                        transition: transform 0.2s;
-                    }
+    formatObjectStores(content) {
+        let html = '';
+        for (const [storeName, items] of Object.entries(content)) {
+            html += `
+                <div class="store-section">
+                    <h4>${storeName}</h4>
+                    <table>
+                        <tr><th>Clé</th><th>Valeur</th></tr>
+                        ${items.map(item => `
+                            <tr><td>${item.key}</td><td><pre>${JSON.stringify(item.value, null, 2)}</pre></td></tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `;
+        }
+        return html;
+    }
 
-                    .kpi-card:hover {
-                        transform: translateY(-2px);
-                    }
+    showLocalStorageView(container) {
+        const items = Object.entries(localStorage);
+        if (items.length === 0) {
+            container.innerHTML = 'localStorage est vide';
+            return;
+        }
+        container.innerHTML = `
+            <table><tr><th>Clé</th><th>Valeur</th></tr>
+            ${items.map(([key, value]) => `
+                <tr><td>${key}</td><td><pre>${value}</pre></td></tr>
+            `).join('')}
+            </table>
+        `;
+    }
 
-                    .kpi-card h3 {
-                        margin: 0;
-                        color: #333;
-                        font-size: 16px;
-                    }
+    showCookiesView(container) {
+        const cookies = document.cookie.split(';')
+            .map(cookie => {
+                const [key, value] = cookie.trim().split('=');
+                return { key, value };
+            })
+            .filter(cookie => cookie.key);
+        if (cookies.length === 0) {
+            container.innerHTML = 'Aucun cookie trouvé';
+            return;
+        }
+        container.innerHTML = `
+            <table><tr><th>Nom</th><th>Valeur</th></tr>
+            ${cookies.map(cookie => `
+                <tr><td>${cookie.key}</td><td>${cookie.value}</td></tr>
+            `).join('')}
+            </table>
+        `;
+    }
 
-                    .kpi-value {
-                        font-size: 28px;
-                        font-weight: bold;
-                        margin: 10px 0;
-                        color: #2196F3;
-                    }
-
-                    .kpi-label {
-                        color: #666;
-                        font-size: 14px;
-                    }
-
-                    .storage-modal {
-                        display: none;
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: rgba(0,0,0,0.5);
-                        z-index: 1000;
-                    }
-
-                    .modal-content {
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        background: white;
-                        width: 90%;
-                        max-width: 800px;
-                        max-height: 90vh;
-                        border-radius: 10px;
-                        display: flex;
-                        flex-direction: column;
-                    }
-
-                    .modal-header {
-                        padding: 20px;
-                        border-bottom: 1px solid #eee;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    }
-
-                    .modal-header h2 {
-                        margin: 0;
-                        font-size: 20px;
-                    }
-
-                    .close-btn {
-                        background: none;
-                        border: none;
-                        font-size: 24px;
-                        cursor: pointer;
-                        color: #666;
-                    }
-
-                    .modal-nav {
-                        display: flex;
-                        gap: 10px;
-                        padding: 10px 20px;
-                        border-bottom: 1px solid #eee;
-                        overflow-x: auto;
-                    }
-
-                    .nav-btn {
-                        padding: 8px 16px;
-                        border: none;
-                        background: none;
-                        cursor: pointer;
-                        border-radius: 20px;
-                        white-space: nowrap;
-                    }
-
-                    .nav-btn.active {
-                        background: #2196F3;
-                        color: white;
-                    }
-
-                    .modal-body {
-                        padding: 20px;
-                        overflow-y: auto;
-                    }
-
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                    }
-
-                    th, td {
-                        padding: 12px;
-                        text-align: left;
-                        border-bottom: 1px solid #eee;
-                    }
-
-                    th {
-                        background: #f5f5f5;
-                        font-weight: bold;
-                    }
-
-                    @media (max-width: 600px) {
-                        .kpi-card {
-                            min-width: 100%;
-                        }
-                        
-                        .modal-content {
-                            width: 100%;
-                            height: 100%;
-                            max-height: 100vh;
-                            border-radius: 0;
-                        }
-                        
-                        .modal-body {
-                            padding: 10px;
-                        }
-                        
-                        th, td {
-                            padding: 8px;
-                        }
-                    }
-                `;
-        
-                const styleElement = document.createElement('style');
-                styleElement.textContent = styles;
-                document.head.appendChild(styleElement);
-            }
-        
-            initializeEvents() {
-                this.container.querySelectorAll('.kpi-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        this.openModal(card.dataset.type);
+    async getIndexedDBContent(dbName) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName);
+            const content = {};
+            request.onerror = () => reject(request.error);
+            request.onsuccess = async (event) => {
+                const db = event.target.result;
+                const objectStoreNames = Array.from(db.objectStoreNames);
+                for (const storeName of objectStoreNames) {
+                    const transaction = db.transaction(storeName, 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    content[storeName] = await new Promise((resolve) => {
+                        const items = [];
+                        store.openCursor().onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                items.push({ key: cursor.key, value: cursor.value });
+                                cursor.continue();
+                            } else {
+                                resolve(items);
+                            }
+                        };
                     });
-                });
-        
-                const modal = this.container.querySelector('#storageModal');
-                modal.querySelector('.close-btn').addEventListener('click', () => {
-                    modal.style.display = 'none';
-                });
-        
-                modal.querySelector('.modal-nav').addEventListener('click', (e) => {
-                    if (e.target.classList.contains('nav-btn')) {
-                        this.showView(e.target.dataset.view);
-                        modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-                        e.target.classList.add('active');
-                    }
-                });
-        
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.style.display = 'none';
-                    }
-                });
-            }
-        
-            async refreshKPIs() {
-                const databases = await window.indexedDB.databases();
-                this.updateKPIValue('indexeddb', databases.length);
-        
-                const lsCount = Object.keys(localStorage).length;
-                this.updateKPIValue('localstorage', lsCount);
-        
-                const cookiesCount = document.cookie.split(';').filter(cookie => cookie.trim()).length;
-                this.updateKPIValue('cookies', cookiesCount);
-            }
-        
-            updateKPIValue(type, value) {
-                const kpiCard = this.container.querySelector(`[data-type="${type}"] .kpi-value`);
-                if (kpiCard) {
-                    kpiCard.textContent = value;
                 }
+                resolve(content);
+                db.close();
+            };
+        });
+    }
+}
+
+const explorer = new StorageExplorer('storage-explorer');
+
+// Real-Time Logging and Display of TensorFlow.js Example
+async function loadTensorFlow() {
+    if (!window.tf) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs';
+        script.onload = initializeTensorFlow;
+        document.head.appendChild(script);
+    } else {
+        initializeTensorFlow();
+    }
+}
+
+function initializeTensorFlow() {
+    const model = tf.sequential();
+    model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+    model.compile({ loss: 'meanSquaredError', optimizer: 'sgd' });
+    
+    const xs = tf.tensor2d([1, 2, 3, 4], [4, 1]);
+    const ys = tf.tensor2d([1, 3, 5, 7], [4, 1]);
+    
+    logTensorFlowStep('Model created and compiled.');
+    model.fit(xs, ys, { epochs: 10 }).then(() => {
+        logTensorFlowStep('Training completed.');
+        model.predict(tf.tensor2d([5], [1, 1])).print();
+    });
+}
+
+function logTensorFlowStep(message) {
+    const logContainer = document.getElementById('tensorflow-log');
+    const logEntry = document.createElement('div');
+    logEntry.textContent = message;
+    logContainer.appendChild(logEntry);
+}
+
+// Button Color Validation - Ensuring Consistency
+function updateButtonColors() {
+    const buttonGroups = document.querySelectorAll('.button-group');
+    buttonGroups.forEach(group => {
+        const buttons = group.querySelectorAll('button');
+        buttons.forEach(button => {
+            const className = button.classList[0];
+            switch (className) {
+                case 'btn-html':
+                    button.style.backgroundColor = '#337ab7';
+                    break;
+                case 'btn-css':
+                    button.style.backgroundColor = '#5cb85c';
+                    break;
+                case 'btn-js':
+                    button.style.backgroundColor = '#f0ad4e';
+                    break;
+                case 'btn-custom':
+                    button.style.backgroundColor = '#5f9ea0';
+                    break;
             }
+        });
+    });
+}
+
+// Real-time Preview Update for iframe and Blocks Management
+function updateRealTimePreview() {
+    const previewIframe = document.getElementById('generated-preview');
+    previewIframe.contentWindow.document.open();
+    previewIframe.contentWindow.document.write(generateHTML());
+    previewIframe.contentWindow.document.close();
+}
+window.addEventListener('DOMContentLoaded', () => {
+    loadApiKey();
+    updateButtonColors();
+    renderBlocks();
+    updateRealTimePreview();
+});
         
-            async openModal(type) {
-                const modal = this.container.querySelector('#storageModal');
-                modal.style.display = 'block';
-                
-                modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === type));
-        
-                await this.showView(type);
-            }
-        
-            async showView(type) {
-                const modalBody = this.container.querySelector('.modal-body');
-                modalBody.innerHTML = 'Chargement...';
-        
-                switch (type) {
-                    case 'indexeddb':
-                        await this.showIndexedDBView(modalBody);
-                        break;
-                    case 'localstorage':
-                        this.showLocalStorageView(modalBody);
-                        break;
-                    case 'cookies':
-                        this.showCookiesView(modalBody);
-                        break;
-                }
-            }
-        
-            async showIndexedDBView(container) {
-                try {
-                    const databases = await window.indexedDB.databases();
-                    if (databases.length === 0) {
-                        container.innerHTML = 'Aucune base IndexedDB trouvée';
-                        return;
-                    }
-        
-                    let html = '<div class="idb-explorer">';
-                    for (const db of databases) {
-                        const content = await this.getIndexedDBContent(db.name);
-                        html += `
-                            <div class="db-section">
-                                <h3>${db.name}</h3>
-                                ${this.formatObjectStores(content)}
-                            </div>
-                        `;
-                    }
-                    html += '</div>';
-                    container.innerHTML = html;
-                } catch (error) {
-                    container.innerHTML = `Erreur: ${error.message}`;
-                }
-            }
-        
-            formatObjectStores(content) {
-                let html = '';
-                for (const [storeName, items] of Object.entries(content)) {
-                    html += `
-                        <div class="store-section">
-                            <h4>${storeName}</h4>
-                            <table>
-                                <tr>
-                                    <th>Clé</th>
-                                    <th>Valeur</th>
-                                </tr>
-                                ${items.map(item => `
-                                    <tr>
-                                        <td>${item.key}</td>
-                                        <td><pre>${JSON.stringify(item.value, null, 2)}</pre></td>
-                                    </tr>
-                                `).join('')}
-                            </table>
-                        </div>
-                    `;
-                }
-                return html;
-            }
-        
-            showLocalStorageView(container) {
-                const items = Object.entries(localStorage);
-                if (items.length === 0) {
-                    container.innerHTML = 'localStorage est vide';
-                    return;
-                }
-        
-                container.innerHTML = `
-                    <table>
-                        <tr>
-                            <th>Clé</th>
-                            <th>Valeur</th>
-                        </tr>
-                        ${items.map(([key, value]) => `
-                            <tr>
-                                <td>${key}</td>
-                                <td><pre>${value}</pre></td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                `;
-            }
-        
-            showCookiesView(container) {
-                const cookies = document.cookie.split(';')
-                    .map(cookie => {
-                        const [key, value] = cookie.trim().split('=');
-                        return { key, value };
-                    })
-                    .filter(cookie => cookie.key);
-        
-                if (cookies.length === 0) {
-                    container.innerHTML = 'Aucun cookie trouvé';
-                    return;
-                }
-        
-                container.innerHTML = `
-                    <table>
-                        <tr>
-                            <th>Nom</th>
-                            <th>Valeur</th>
-                        </tr>
-                        ${cookies.map(cookie => `
-                            <tr>
-                                <td>${cookie.key}</td>
-                                <td>${cookie.value}</td>
-                            </tr>
-                        `).join('')}
-                    </table>
-                `;
-            }
-        
-            async getIndexedDBContent(dbName) {
-                return new Promise((resolve, reject) => {
-                    const request = indexedDB.open(dbName);
-                    const content = {};
-        
-                    request.onerror = () => reject(request.error);
-                    request.onsuccess = async (event) => {
-                        const db = event.target.result;
-                        const objectStoreNames = Array.from(db.objectStoreNames);
-                        
-                        for (const storeName of objectStoreNames) {
-                            const transaction = db.transaction(storeName, 'readonly');
-                            const store = transaction.objectStore(storeName);
-                            content[storeName] = await new Promise((resolve) => {
-                                const items = [];
-                                store.openCursor().onsuccess = (event) => {
-                                    const cursor = event.target.result;
-                                    if (cursor) {
-                                        items.push({ key: cursor.key, value: cursor.value });
-                                        cursor.continue();
-                                    } else {
-                                        resolve(items);
-                                    }
-                                };
-                            });
-                        }
-                        resolve(content);
-                        db.close();
-                    };
-                });
+    </script>
+    
+    <script>
+        let apiKey = localStorage.getItem('apiKey');
+
+        function loadApiKey() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            apiKeyInput.type = 'password';
+            if (apiKey) {
+                document.getElementById('apiKeyInput').textContent = 'Edit API';
+                apiKeyInput.value = '••••••••';
             }
         }
 
-        const explorer = new StorageExplorer('storage-explorer');
+        function editApiKey() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            apiKeyInput.type = 'text';
+            apiKeyInput.value = apiKey;
+        }
 
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKeyInput').value;
+            localStorage.setItem('apiKey', btoa(apiKey));
+            loadApiKey();
+        }
+
+// Fonction de déchiffrement pour l'API Key stockée en local
+function decryptApiKey() {
+    const encryptedApiKey = localStorage.getItem('encryptedApiKey');
+    if (!encryptedApiKey) return "";
+    const passphrase = prompt("Entrez le mot de passe pour déchiffrer la clé API :");
+    return atob(encryptedApiKey).split(passphrase).join('');
+}
+
+// Sauvegarder la clé API chiffrée en local
+function saveApiKey() {
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const passphrase = prompt("Entrez un mot de passe pour chiffrer la clé API :");
+    const encryptedApiKey = btoa(apiKeyInput.value + passphrase);
+    localStorage.setItem('encryptedApiKey', encryptedApiKey);
+    apiKeyInput.value = "••••••••";
+}
+
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            loadApiKey();
+        });
     </script>
+<script>
+
+// Variables pour stocker la clé d'API et le mot de passe localement
+const apiKeyInput = document.getElementById("apiKeyInput");
+const passwordPrompt = document.getElementById("passwordPrompt");
+
+async function requestPassword() {
+    if (apiKeyInput.value) {
+        // Si une clé est présente, affiche le champ pour saisir un mot de passe pour le chiffrement
+        apiKey = apiKeyInput.value;
+        passwordPrompt.style.display = "block";
+        apiKeyInput.disabled = true;
+    } else if (localStorage.getItem('encryptedApiKey')) {
+        // Si le champ est vide et qu'une clé est stockée, proposer la suppression
+        const confirmDeletion = confirm("No API key entered. Do you want to delete the stored API key?");
+        if (confirmDeletion) {
+            removeApiKey();
+            alert("Stored API key has been deleted.");
+        }
+    } else {
+        alert("Please enter an API key.");
+    }
+}
+
+async function confirmPassword() {
+    const password = document.getElementById("passwordInput").value;
+    if (password) {
+        await saveApiKeyWithPassword(apiKey, password);
+        passwordPrompt.style.display = "none";
+        apiKeyInput.value = "••••••••";  // Cache la clé API
+        alert("API key encrypted and saved successfully.");
+    } else {
+        alert("Please enter a password.");
+    }
+}
+
+// Fonction pour dériver la clé de chiffrement depuis le mot de passe
+async function deriveKeyFromPassword(password) {
+    const encoder = new TextEncoder();
+    const passwordKey = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+    );
+    return await crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: new Uint8Array(16), // Utilisez un sel fixe pour simplification
+            iterations: 100000,
+            hash: "SHA-256",
+        },
+        passwordKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+    );
+}
+
+// Chiffrement et stockage de la clé API
+async function encryptApiKey(apiKey, password) {
+    const key = await deriveKeyFromPassword(password);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedData = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        new TextEncoder().encode(apiKey)
+    );
+    localStorage.setItem('encryptedApiKey', btoa(String.fromCharCode(...new Uint8Array(encryptedData))));
+    localStorage.setItem('iv', btoa(String.fromCharCode(...iv)));
+}
+
+async function saveApiKeyWithPassword(apiKey, password) {
+    await encryptApiKey(apiKey, password);
+}
+
+// Déchiffrement de la clé API stockée
+async function decryptApiKey(password) {
+    const key = await deriveKeyFromPassword(password);
+    const iv = Uint8Array.from(atob(localStorage.getItem('iv')), c => c.charCodeAt(0));
+    const encryptedData = Uint8Array.from(atob(localStorage.getItem('encryptedApiKey')), c => c.charCodeAt(0));
+    const decrypted = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv },
+        key,
+        encryptedData
+    );
+    return new TextDecoder().decode(decrypted);
+}
+
+// Suppression de la clé API stockée
+function removeApiKey() {
+    localStorage.removeItem('encryptedApiKey');
+    localStorage.removeItem('iv');
+    apiKeyInput.value = '';
+    apiKeyInput.disabled = false;
+    passwordPrompt.style.display = "none";
+}
+    
+</script>
+<script>
+
+function renderMarkdownContent(content) {
+    const backendContainer = document.getElementById('backend-details');
+    backendContainer.innerHTML = '';  // Vider le contenu existant
+    
+    const markdownDiv = document.createElement('div');
+    markdownDiv.classList.add('markdown-content');
+
+    content.split('\n').forEach(line => {
+        const lineDiv = document.createElement('div');
+        
+        if (line.startsWith('```')) {  // Détecte le début et la fin des blocs de code
+            lineDiv.classList.add('code-block');
+            lineDiv.textContent = line.replace(/```/g, '');  // Supprimer les ``` et formater
+        } else {
+            lineDiv.textContent = line;
+        }
+
+        markdownDiv.appendChild(lineDiv);
+    });
+    
+    backendContainer.appendChild(markdownDiv);
+}
+
+async function generateBackend() {
+    const generatorChoice = document.getElementById('generator-select').value;
+    const loader = document.getElementById('loader');
+    const responseContent = document.getElementById('response-content');
+
+    if (!loader || !responseContent) {
+        console.error("Loader or response-content elements are missing.");
+        return;
+    }
+
+    // Afficher le loader et vider la réponse précédente
+    loader.style.display = 'block';
+    responseContent.innerHTML = '';
+
+    let apiUrl = 'https://api.openai.com/v1/chat/completions';
+    let headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+    };
+    let model = "gpt-3.5-turbo";
+
+    if (generatorChoice === 'claude') {
+        apiUrl = 'https://api.anthropic.com/v1/complete';
+        headers = {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey
+        };
+        model = "claude-1";
+    }
+
+    const requestPayload = generatorChoice === 'claude'
+        ? JSON.stringify({
+            model,
+            prompt: "Générez les fichiers backend nécessaires.",
+            max_tokens: 1000
+        })
+        : JSON.stringify({
+            model,
+            messages: [{ role: "user", content: "Générez les fichiers backend nécessaires au fonctionnement de mon application, ainsi qu'un Dockerfile et un fichier app-info.json. Pour chaque composant, montrez le code sans omission ni commentaire." }],
+            max_tokens: 1000
+        });
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: requestPayload
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const responseBody = await response.json();
+            const aiResponse = generatorChoice === 'claude'
+                ? responseBody.completion
+                : responseBody.choices[0].message.content;
+
+            // Enregistrer la réponse en localStorage
+            localStorage.setItem('lastBackendResponse', aiResponse);
+
+            // Convertir le Markdown en HTML et afficher dans le conteneur
+            responseContent.innerHTML = marked.parse(aiResponse);
+        } else {
+            throw new Error("La réponse n'est pas au format JSON.");
+        }
+    } catch (error) {
+        console.error("Erreur lors de la génération du backend :", error);
+        responseContent.innerHTML = `<p>Erreur lors de la génération du backend : ${error.message}</p>`;
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+
+// Au chargement de la page, réinjecter la dernière réponse
+window.onload = function() {
+    const savedResponse = localStorage.getItem('lastBackendResponse');
+    const responseContent = document.getElementById('response-content');
+
+    // Vérifier si savedResponse contient une valeur et n'est pas "No content" ou null
+    if (savedResponse && savedResponse !== "No content") {
+        try {
+            // Convertir le Markdown en HTML et afficher dans le conteneur
+            responseContent.innerHTML = marked.parse(savedResponse);
+        } catch (error) {
+            console.error("Erreur lors de l'affichage du contenu sauvegardé :", error);
+            responseContent.innerHTML = "<p>Erreur lors de l'affichage de la réponse sauvegardée.</p>";
+        }
+    } else {
+        responseContent.innerHTML = "<p>Aucun contenu sauvegardé à afficher.</p>";
+    }
+};
+
+
+// Chargement et déchiffrement de la clé API au démarrage si elle est stockée
+async function loadApiKeyOnStartup() {
+    const encryptedApiKey = localStorage.getItem('encryptedApiKey');
+    
+    if (encryptedApiKey) {
+        const password = prompt("Enter the password to decrypt your API key:");
+        
+        if (password) {
+            try {
+                const decryptedApiKey = await decryptApiKey(password);
+                // Si déchiffrement réussi, afficher "••••••••" pour masquer la clé
+                if (decryptedApiKey) {
+                    apiKeyInput.value = "••••••••";
+                    apiKey = decryptedApiKey; // Stockage temporaire de la clé déchiffrée
+                    alert("API key decrypted and loaded.");
+                }
+            } catch (error) {
+                alert("Incorrect password. API key could not be loaded.");
+                apiKeyInput.value = ''; // Affiche le champ vide si le mot de passe est incorrect
+            }
+        } else {
+            apiKeyInput.value = ''; // Affiche le champ vide si l'utilisateur annule la saisie du mot de passe
+        }
+    } else {
+        apiKeyInput.value = ''; // Affiche le champ vide si aucune clé n'est stockée
+    }
+}
+
+// Fonction pour charger et déchiffrer la clé API au démarrage si elle est stockée
+async function loadApiKeyOnStartup() {
+    const encryptedApiKey = localStorage.getItem('encryptedApiKey');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    
+    if (encryptedApiKey) {
+        const password = prompt("Entrez le mot de passe pour déchiffrer votre clé API :");
+        
+        if (password) {
+            try {
+                const decryptedApiKey = await decryptApiKey(password);
+                if (decryptedApiKey) {
+                    apiKeyInput.value = "••••••••"; // Masquer la clé dans le champ
+                    apiKey = decryptedApiKey; // Stocker temporairement la clé déchiffrée pour l'usage
+                }
+            } catch (error) {
+                console.error("Erreur lors du déchiffrement :", error);
+                alert("Mot de passe incorrect. La clé API n’a pas pu être chargée.");
+                apiKeyInput.value = ''; // Vider le champ si le mot de passe est incorrect
+            }
+        }
+    } else {
+        apiKeyInput.value = ''; // Vider le champ si aucune clé n'est stockée
+    }
+}
+
+// Appel de la fonction de chargement au démarrage
+window.onload = async function() {
+    await loadApiKeyOnStartup(); // Charger et déchiffrer la clé si elle est stockée
+    const savedResponse = localStorage.getItem('lastBackendResponse');
+    const responseContent = document.getElementById('response-content');
+
+    if (savedResponse && savedResponse !== "No content") {
+        try {
+            responseContent.innerHTML = marked.parse(savedResponse);
+        } catch (error) {
+            console.error("Erreur lors de l'affichage du contenu sauvegardé :", error);
+            responseContent.innerHTML = "<p>Erreur lors de l'affichage de la réponse sauvegardée.</p>";
+        }
+    } else {
+        responseContent.innerHTML = "<p>Aucun contenu sauvegardé à afficher.</p>";
+    }
+};
+
+
+
+    
+</script>
 </body>
 </html>
+
