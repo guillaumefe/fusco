@@ -84,6 +84,7 @@
             padding: 10px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-top:15px;
         }
         #toggle-categories-btn:hover {
             background-color: #daa520; /* Or */
@@ -236,10 +237,11 @@
 <body>
     <div id="builder">
         <h2>Fusko</h2>
-        <code>HTML/CSS/JS Builder</code>
+        
+        <div id="storage-explorer"></div>
         
         <!-- Bouton de Bascule des Catégories -->
-        <button id="toggle-categories-btn" onclick="toggleCategories()">Afficher/Cacher les Catégories</button>
+        <button id="toggle-categories-btn" onclick="toggleCategories()">Display/Hide categories</button>
 
         <!-- Group HTML Buttons -->
         <div class="button-group" id="html-group">
@@ -380,6 +382,179 @@
             fontSize: "14px",
             showPrintMargin: false
         });
+        
+        // Surveillence de données
+        class StorageViewer {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                if (!this.container) {
+                    throw new Error('Container element not found');
+                }
+                
+                this.init();
+            }
+        
+            async init() {
+                this.container.innerHTML = `
+                    <div class="storage-viewer">
+                        <div class="storage-section">
+                            <h3>IndexedDB</h3>
+                            <div id="idb-content"></div>
+                        </div>
+                        <div class="storage-section">
+                            <h3>localStorage</h3>
+                            <div id="ls-content"></div>
+                        </div>
+                        <div class="storage-section">
+                            <h3>Cookies</h3>
+                            <div id="cookies-content"></div>
+                        </div>
+                    </div>
+                    <style>
+                        .storage-viewer {
+                            font-family: Arial, sans-serif;
+                            padding: 10px;
+                        }
+                        .storage-section {
+                            margin-bottom: 20px;
+                            border: 1px solid #ddd;
+                            padding: 10px;
+                            border-radius: 4px;
+                        }
+                        .storage-section h3 {
+                            margin-top: 0;
+                            color: #333;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        th, td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: left;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                        }
+                    </style>
+                `;
+        
+                await this.displayIndexedDB();
+                this.displayLocalStorage();
+                this.displayCookies();
+            }
+            
+            
+            async displayIndexedDB() {
+                const idbContent = this.container.querySelector('#idb-content');
+                try {
+                    const databases = await window.indexedDB.databases();
+                    let html = '<table><tr><th>Base de données</th><th>Contenu</th></tr>';
+                    
+                    for (const db of databases) {
+                        const dbContent = await this.getIndexedDBContent(db.name);
+                        html += `
+                            <tr>
+                                <td>${db.name}</td>
+                                <td><pre>${JSON.stringify(dbContent, null, 2)}</pre></td>
+                            </tr>
+                        `;
+                    }
+                    
+                    html += '</table>';
+                    idbContent.innerHTML = databases.length ? html : 'Aucune base IndexedDB trouvée';
+                } catch (error) {
+                    idbContent.innerHTML = `Erreur lors de l'accès à IndexedDB: ${error.message}`;
+                }
+            }
+        
+            async getIndexedDBContent(dbName) {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(dbName);
+                    const content = {};
+        
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = async (event) => {
+                        const db = event.target.result;
+                        const objectStoreNames = Array.from(db.objectStoreNames);
+                        
+                        for (const storeName of objectStoreNames) {
+                            const transaction = db.transaction(storeName, 'readonly');
+                            const store = transaction.objectStore(storeName);
+                            content[storeName] = await new Promise((resolve) => {
+                                const items = [];
+                                store.openCursor().onsuccess = (event) => {
+                                    const cursor = event.target.result;
+                                    if (cursor) {
+                                        items.push({ key: cursor.key, value: cursor.value });
+                                        cursor.continue();
+                                    } else {
+                                        resolve(items);
+                                    }
+                                };
+                            });
+                        }
+                        resolve(content);
+                        db.close();
+                    };
+                });
+            }
+        
+            displayLocalStorage() {
+                const lsContent = this.container.querySelector('#ls-content');
+                try {
+                    const items = Object.entries(localStorage);
+                    if (items.length === 0) {
+                        lsContent.innerHTML = 'localStorage est vide';
+                        return;
+                    }
+        
+                    let html = '<table><tr><th>Clé</th><th>Valeur</th></tr>';
+                    items.forEach(([key, value]) => {
+                        html += `
+                            <tr>
+                                <td>${key}</td>
+                                <td><pre>${value}</pre></td>
+                            </tr>
+                        `;
+                    });
+                    html += '</table>';
+                    lsContent.innerHTML = html;
+                } catch (error) {
+                    lsContent.innerHTML = `Erreur lors de l'accès au localStorage: ${error.message}`;
+                }
+            }
+        
+            displayCookies() {
+                const cookiesContent = this.container.querySelector('#cookies-content');
+                try {
+                    const cookies = document.cookie.split(';').map(cookie => {
+                        const [key, value] = cookie.trim().split('=');
+                        return { key, value };
+                    }).filter(cookie => cookie.key);
+        
+                    if (cookies.length === 0) {
+                        cookiesContent.innerHTML = 'Aucun cookie trouvé';
+                        return;
+                    }
+        
+                    let html = '<table><tr><th>Nom</th><th>Valeur</th></tr>';
+                    cookies.forEach(({ key, value }) => {
+                        html += `
+                            <tr>
+                                <td>${key}</td>
+                                <td>${value}</td>
+                            </tr>
+                        `;
+                    });
+                    html += '</table>';
+                    cookiesContent.innerHTML = html;
+                } catch (error) {
+                    cookiesContent.innerHTML = `Erreur lors de l'accès aux cookies: ${error.message}`;
+                }
+            }
+        }
 
         // Fonction pour échapper les caractères spéciaux en HTML
         function escapeHtml(text) {
@@ -826,6 +1001,434 @@
             document.getElementById('js-group').style.display = categoriesVisible ? 'block' : 'none';
             document.getElementById('cs-group').style.display = categoriesVisible ? 'block' : 'none';
         }
+        
+        
+ class StorageExplorer {
+    constructor(containerId) {
+        this.container = document.getElementById(containerId);
+        if (!this.container) {
+            throw new Error('Container element not found');
+        }
+        
+        this.init();
+        this.addStyles();
+    }
+
+    async init() {
+        // Structure principale
+        this.container.innerHTML = `
+            <div class="storage-kpis">
+                <div class="kpi-card" data-type="indexeddb">
+                    <h3>IndexedDB</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Bases de données</div>
+                </div>
+                <div class="kpi-card" data-type="localstorage">
+                    <h3>localStorage</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Entrées</div>
+                </div>
+                <div class="kpi-card" data-type="cookies">
+                    <h3>Cookies</h3>
+                    <div class="kpi-value">...</div>
+                    <div class="kpi-label">Cookies actifs</div>
+                </div>
+            </div>
+
+            <div class="storage-modal" id="storageModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Explorateur de stockage</h2>
+                        <button class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-nav">
+                        <button class="nav-btn active" data-view="indexeddb">IndexedDB</button>
+                        <button class="nav-btn" data-view="localstorage">localStorage</button>
+                        <button class="nav-btn" data-view="cookies">Cookies</button>
+                    </div>
+                    <div class="modal-body"></div>
+                </div>
+            </div>
+        `;
+
+        // Initialiser les événements
+        this.initializeEvents();
+        
+        // Charger les données initiales
+        await this.refreshKPIs();
+    }
+
+    addStyles() {
+        const styles = `
+            .storage-kpis {
+                display: flex;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+
+            .kpi-card {
+                flex: 1;
+                min-width: 200px;
+                padding: 20px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                cursor: pointer;
+                transition: transform 0.2s;
+            }
+
+            .kpi-card:hover {
+                transform: translateY(-2px);
+            }
+
+            .kpi-card h3 {
+                margin: 0;
+                color: #333;
+                font-size: 16px;
+            }
+
+            .kpi-value {
+                font-size: 28px;
+                font-weight: bold;
+                margin: 10px 0;
+                color: #2196F3;
+            }
+
+            .kpi-label {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .storage-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+            }
+
+            .modal-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                width: 90%;
+                max-width: 800px;
+                max-height: 90vh;
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .modal-header {
+                padding: 20px;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+                font-size: 20px;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+            }
+
+            .modal-nav {
+                display: flex;
+                gap: 10px;
+                padding: 10px 20px;
+                border-bottom: 1px solid #eee;
+                overflow-x: auto;
+            }
+
+            .nav-btn {
+                padding: 8px 16px;
+                border: none;
+                background: none;
+                cursor: pointer;
+                border-radius: 20px;
+                white-space: nowrap;
+            }
+
+            .nav-btn.active {
+                background: #2196F3;
+                color: white;
+            }
+
+            .modal-body {
+                padding: 20px;
+                overflow-y: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th, td {
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+
+            th {
+                background: #f5f5f5;
+                font-weight: bold;
+            }
+
+            @media (max-width: 600px) {
+                .kpi-card {
+                    min-width: 100%;
+                }
+                
+                .modal-content {
+                    width: 100%;
+                    height: 100%;
+                    max-height: 100vh;
+                    border-radius: 0;
+                }
+                
+                .modal-body {
+                    padding: 10px;
+                }
+                
+                th, td {
+                    padding: 8px;
+                }
+            }
+        `;
+
+        const styleElement = document.createElement('style');
+        styleElement.textContent = styles;
+        document.head.appendChild(styleElement);
+    }
+
+    initializeEvents() {
+        // Événements pour les cartes KPI
+        this.container.querySelectorAll('.kpi-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.openModal(card.dataset.type);
+            });
+        });
+
+        // Événements pour le modal
+        const modal = this.container.querySelector('#storageModal');
+        modal.querySelector('.close-btn').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        modal.querySelector('.modal-nav').addEventListener('click', (e) => {
+            if (e.target.classList.contains('nav-btn')) {
+                this.showView(e.target.dataset.view);
+                modal.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+            }
+        });
+
+        // Fermer le modal en cliquant en dehors
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    async refreshKPIs() {
+        // IndexedDB KPI
+        const databases = await window.indexedDB.databases();
+        this.updateKPIValue('indexeddb', databases.length);
+
+        // localStorage KPI
+        const lsCount = Object.keys(localStorage).length;
+        this.updateKPIValue('localstorage', lsCount);
+
+        // Cookies KPI
+        const cookiesCount = document.cookie.split(';').filter(cookie => cookie.trim()).length;
+        this.updateKPIValue('cookies', cookiesCount);
+    }
+
+    updateKPIValue(type, value) {
+        const kpiCard = this.container.querySelector(`[data-type="${type}"] .kpi-value`);
+        if (kpiCard) {
+            kpiCard.textContent = value;
+        }
+    }
+
+    async openModal(type) {
+        const modal = this.container.querySelector('#storageModal');
+        modal.style.display = 'block';
+        
+        // Activer le bon onglet
+        modal.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === type);
+        });
+
+        await this.showView(type);
+    }
+
+    async showView(type) {
+        const modalBody = this.container.querySelector('.modal-body');
+        modalBody.innerHTML = 'Chargement...';
+
+        switch (type) {
+            case 'indexeddb':
+                await this.showIndexedDBView(modalBody);
+                break;
+            case 'localstorage':
+                this.showLocalStorageView(modalBody);
+                break;
+            case 'cookies':
+                this.showCookiesView(modalBody);
+                break;
+        }
+    }
+
+    async showIndexedDBView(container) {
+        try {
+            const databases = await window.indexedDB.databases();
+            if (databases.length === 0) {
+                container.innerHTML = 'Aucune base IndexedDB trouvée';
+                return;
+            }
+
+            let html = '<div class="idb-explorer">';
+            for (const db of databases) {
+                const content = await this.getIndexedDBContent(db.name);
+                html += `
+                    <div class="db-section">
+                        <h3>${db.name}</h3>
+                        ${this.formatObjectStores(content)}
+                    </div>
+                `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        } catch (error) {
+            container.innerHTML = `Erreur: ${error.message}`;
+        }
+    }
+
+    formatObjectStores(content) {
+        let html = '';
+        for (const [storeName, items] of Object.entries(content)) {
+            html += `
+                <div class="store-section">
+                    <h4>${storeName}</h4>
+                    <table>
+                        <tr>
+                            <th>Clé</th>
+                            <th>Valeur</th>
+                        </tr>
+                        ${items.map(item => `
+                            <tr>
+                                <td>${item.key}</td>
+                                <td><pre>${JSON.stringify(item.value, null, 2)}</pre></td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                </div>
+            `;
+        }
+        return html;
+    }
+
+    showLocalStorageView(container) {
+        const items = Object.entries(localStorage);
+        if (items.length === 0) {
+            container.innerHTML = 'localStorage est vide';
+            return;
+        }
+
+        container.innerHTML = `
+            <table>
+                <tr>
+                    <th>Clé</th>
+                    <th>Valeur</th>
+                </tr>
+                ${items.map(([key, value]) => `
+                    <tr>
+                        <td>${key}</td>
+                        <td><pre>${value}</pre></td>
+                    </tr>
+                `).join('')}
+            </table>
+        `;
+    }
+
+    showCookiesView(container) {
+        const cookies = document.cookie.split(';')
+            .map(cookie => {
+                const [key, value] = cookie.trim().split('=');
+                return { key, value };
+            })
+            .filter(cookie => cookie.key);
+
+        if (cookies.length === 0) {
+            container.innerHTML = 'Aucun cookie trouvé';
+            return;
+        }
+
+        container.innerHTML = `
+            <table>
+                <tr>
+                    <th>Nom</th>
+                    <th>Valeur</th>
+                </tr>
+                ${cookies.map(cookie => `
+                    <tr>
+                        <td>${cookie.key}</td>
+                        <td>${cookie.value}</td>
+                    </tr>
+                `).join('')}
+            </table>
+        `;
+    }
+
+    async getIndexedDBContent(dbName) {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName);
+            const content = {};
+
+            request.onerror = () => reject(request.error);
+            request.onsuccess = async (event) => {
+                const db = event.target.result;
+                const objectStoreNames = Array.from(db.objectStoreNames);
+                
+                for (const storeName of objectStoreNames) {
+                    const transaction = db.transaction(storeName, 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    content[storeName] = await new Promise((resolve) => {
+                        const items = [];
+                        store.openCursor().onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                items.push({ key: cursor.key, value: cursor.value });
+                                cursor.continue();
+                            } else {
+                                resolve(items);
+                            }
+                        };
+                    });
+                }
+                resolve(content);
+                db.close();
+            };
+        });
+    }
+}       
+const explorer = new StorageExplorer('storage-explorer');
     </script>
 </body>
 </html>
