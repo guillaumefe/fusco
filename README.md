@@ -1,5 +1,7 @@
 # Fusko
 
+![image](https://github.com/user-attachments/assets/0696796b-3937-4404-8f95-4b8e7d031e28)
+
 **Fusko** est un outil basé sur le web pour créer, organiser et prévisualiser des composants HTML, CSS et JavaScript.
 
 **Fusko** is a web-based tool for creating, organizing, and previewing HTML, CSS, and JavaScript components.
