@@ -504,7 +504,7 @@
             <tbody></tbody>
         </table>
         <button id="download-btn" onclick="downloadPage()">Download index.html</button>
-        <iframe id="generated-preview" sandbox="allow-scripts allow-same-origin"></iframe>
+        <iframe id="generated-preview"  sandbox="allow-scripts allow-same-origin allow-modals"></iframe>
         <!-- Sélecteur pour choisir le générateur et bouton pour générer le backend -->
         <label for="generator-select">Choisissez un générateur :</label>
         <select id="generator-select">
@@ -859,12 +859,8 @@ function generateHTML() {
     html += `<head>\n`;
 
     blocks.forEach(block => {
-        if (block.type === 'HTML DOCTYPE' || block.type === 'HTML Lang') {
-            return;
-        } else if (block.type.startsWith('CSS ')) {
+        if (block.type.startsWith('CSS ')) {
             html += `<style>\n${block.content}\n</style>\n`;
-        } else if (block.type === 'JS CDN') {
-            html += `${block.content}\n`;
         }
     });
 
@@ -873,8 +869,15 @@ function generateHTML() {
 
     blocks.forEach(block => {
         if (block.type.startsWith('HTML ')) {
-            if (['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) return;
-            html += `${block.content}\n`;
+            if (!['HTML DOCTYPE', 'HTML Lang'].includes(block.type)) {
+                html += `${block.content}\n`;
+            }
+        }
+    });
+
+    blocks.forEach(block => {
+        if (block.type === 'JS Script') {
+            html += `<script>${block.content.replace('<\\/script>', '<\/script>')}<\/script>\n`;
         }
     });
 
@@ -882,6 +885,7 @@ function generateHTML() {
     html += `</html>\n`;
     return html;
 }
+
 
 function highlightBlock(index) {
     const blocksDiv = document.getElementById('blocks');
